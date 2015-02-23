@@ -1,0 +1,48 @@
+Cuda Ising 2D
+Stefano Mandelli
+email: linuxfree2@gmail.com
+
+
+1. Introduzione
+
+Il programma simula l'evoluzione di un reticolo di Ising bidimensionale finito tramite mosse di singolo spin-flip.
+
+
+2. Installazione 
+
+   Nella directory src sono presenti i sorgenti. 
+
+   fill_ran.cpp	-> Funzione per rimepire in modo oppurtuno il vettore dei nodi;
+   fill_ran.h	
+   init.cu	-> funzione di wakeup scheda grafica
+   init.h	
+   Makefile	
+   new_ising.cu	-> File principale in cui è contenuto il main
+   render.cpp	-> funzione per gestire un opzionale output grafico
+   render.h	
+
+
+   Nella directory principale è presente il Makefile generico che compila tutto il progetto.
+   
+3. File Essenziali
+
+   Per funzionare, il programma ha bisogno di due file dati:
+   -temp.dat
+   -nodi_x_y_z_w.dat
+
+   Il primo contiene tutte le temperature a cui viene ispezionato il nostro sistema;
+   Il secondo contiene i seed dei relativi nodi del generatore di numeri random.
+   
+   !!!ATTENZIONE!!! Se si perde il file nodi_x_y_z_w.dat, per rigenerarlo ci vogliono almeno 10giorni. 
+
+
+
+
+    
+
+
+
+
+
+
+
