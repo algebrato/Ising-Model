@@ -26,7 +26,7 @@
 #define SPINS_PER_BLOCK (N/2)           //NON HA SENSO! (togliere questa follia)
 #define TOT_TH  (BLOCKS*THREADS)        //N. di threads totali della griglia.
 
-#define STEP            1000
+#define STEP            10
 #define TERM_STEP       100
 #define VUOTO           1000
 #define TOT             (STEP*VUOTO)
@@ -59,7 +59,57 @@ __device__ float MTGPU(unsigned int tid, unsigned int *s1, unsigned int *s2, uns
 	w=*s4;
 
 	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+    	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
 
+ 
 	*s1 = x;
 	*s2 = y;
 	*s3 = z;
@@ -172,13 +222,14 @@ __global__ void update_metropolis_shared(spin_t *s, unsigned int* a, unsigned in
 		c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
 		d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 	
-		__shared__ int deltaE[THREADS];
+		/*__shared__ int deltaE[THREADS];
 		deltaE[n] = ie;
 		for(int stride = THREADS>>1; stride > 0 ; stride >>=1){
 			__syncthreads();
 			if(n < stride) deltaE[n] += deltaE[n+stride];
 		}
 		if(n == 0) energie[blockIdx.y*GRIDL+blockIdx.x] += deltaE[0];
+		*/
 		__syncthreads();
 
 }
@@ -233,7 +284,7 @@ int main(int pippo, char **pero){
 	c=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
-	fill_ran_vec(a, b, c, d, TOT_TH);
+	fill_ran_vec2(a, b, c, d, TOT_TH);
 
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));

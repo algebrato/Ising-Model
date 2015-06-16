@@ -11,7 +11,6 @@ void fill_ran_vec (unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 	fstream in;
 	in.open("MAKE_NODES/nodi_x_y_z_w.dat",ios::in);
 	int STEP = NODES/N;
-	//cout << STEP << endl;
 	unsigned int app1, app2, app3, app4; 
 	int k=0;
 	for(int i=0; i<NODES; i++){
@@ -23,3 +22,21 @@ void fill_ran_vec (unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 		in >> app1 >> app2 >> app3 >> app4;
 	}
 }
+
+
+void fill_ran_vec2 (unsigned int *a, unsigned int *b, unsigned int *c, unsigned int *d, int N){
+	for(int i=0; i<N; ++i){
+		a[i]=i;
+		b[i]=i;
+		c[i]=i;
+		d[i]=i;
+	}
+
+}
+
+
+
+
+
+
+
