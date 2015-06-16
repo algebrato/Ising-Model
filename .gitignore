@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Compiled Object files
 *.slo
 *.lo
@@ -26,3 +27,11 @@
 *.exe
 *.out
 *.app
+=======
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+>>>>>>> a6fb1cbbfbd4f645550e043c3324bbc2369a7b61
