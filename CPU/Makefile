@@ -19,21 +19,19 @@ CC		:= g++
 
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
-ARCH 		:= -arch=sm_20
-LIBS		:= -lGL -lGLU -lglut -lcurand
-INC		:= -I/home/algebrato/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc/ -I/home/algebrato/NVIDIA_GPU_Computing_SDK/shared/inc/
+LIBS		:= 
+INC		:= 
 else
 FLAGS		:= -O2
-ARCH		:= -arch=sm_20
-LIBS		:= -lGL -lGLU -lglut -lcurand
-INC		:= -I/home/algebrato/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc/ -I/home/algebrato/NVIDIA_GPU_Computing_SDK/shared/inc/
+LIBS		:=
+INC		:=
 endif
 
 %.o : %.cpp
-	$(CC) ${LIBS} ${FLAGS}  -c $< -o $@
+	$(CC) ${LIBS} ${FLAGS} -c $< -o $@
 
 ${ESEGUIBILE}: ${OBJ}
-	$(NVCC) ${FLAGS} ${ARCH} ${LIBS} -o $@ $^	
+	$(CC) ${LIBS} ${FLAGS} -o $@ $^	
 
 endif
 

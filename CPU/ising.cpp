@@ -8,7 +8,13 @@
 #include <sys/time.h>
 
 #define DIM 2
-#define TERM_STEP 1000000
+#define TERM_STEP 10000
+
+
+#define A  1664525
+#define B  1013904223
+#define MULT2 4.6566128752457969e-10f
+#define RAN(n) (n = A*n + B)
 
 using namespace std;
 
@@ -27,6 +33,7 @@ double getTime(){
 class ising_lattice {
 	private:
 		int *s_;
+		int *sf_;
 		int size_;
 		double *boltz_;
 		double beta_;
@@ -37,12 +44,17 @@ class ising_lattice {
 	public:
 		ising_lattice(int N, string init, double BETA=0.44) : size_(N), J_(1), beta_(BETA) {
 			s_ = (int*)malloc(N*N*sizeof(int));
+			sf_ = (int*)malloc(N*N*sizeof(int));
 			if(init == "1" ){
-				for(int i=0; i<N*N; ++i)
+				for(int i=0; i<N*N; ++i){
 					s_[i]=1;
+					sf_[i]=1;
+				}
 			}else{
-				for(int i=0; i<N*N; ++i)
+				for(int i=0; i<N*N; ++i){
 					s_[i]=-1;
+					sf_[i]=-1;
+				}
 			}
 			boltz_ = (double*)malloc((4*DIM+1)*sizeof(double));
 			for(int i=-2*DIM; i<=2*DIM; i++) boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
@@ -72,17 +84,30 @@ class ising_lattice {
 
 		void do_update(){
 			srand(time(NULL));
-			for(int y=0; y<size_; ++y)
+			for(int y=0; y<size_; ++y){
 				for(int x=0; x<size_; ++x){
 					int ide = s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
+					//double r =  fabs(RAN(seed_)*MULT2);
 					double r = rand();
-					if(ide <= 0 || r / ((double)RAND_MAX) < boltz_[ide+2*DIM]){
-						s_[size_*y+x] = -s_[size_*y+x];
+					if(ide <= 0 || r /(double)RAND_MAX < boltz_[ide+2*DIM]){
+						sf_[size_*y+x] = -s_[size_*y+x];
 						++ok_;
+					}else{
+						sf_[size_*y+x] = s_[size_*y+x];
 					}
 				}
+			}
 
-		}
+			for(int y=0; y<size_; ++y){
+				for(int x=0; x<size_; ++x){
+					s_[size_*y+x] = sf_[size_*y+x];
+				}
+			}
+
+
+		}//do_update
+
+
 		int get_ok_MC(){
 			return ok_;
 		}
@@ -101,10 +126,10 @@ int main(int argc, char**argv){
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
 	
 	double start = getTime();
-	printf("Start termalization... \n");
+	//printf("Start termalization... \n");
 	for(int i=0; i < TERM_STEP; ++i)
 		s.do_update();
-	printf("Termalized!\n");
+	//printf("Termalized!\n");
 	
 	double M=0;
 	for(int i=0; i<atoi(argv[4]); i++){
@@ -112,12 +137,14 @@ int main(int argc, char**argv){
 		M+=s.get_magnetization_p_s();
 	}
 	double end = getTime();
+	//s.print_lattice();
+	//printf("TOT=%f\n",M);
 
 
 
-	printf("%f\t%f\n",atof(argv[3]), M/=((double)(TERM_STEP+atoi(argv[4]))));
-	printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
-	printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
+	printf("%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]));
+	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
+	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
 }
 
