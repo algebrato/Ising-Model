@@ -17,7 +17,7 @@
 #define DEV 0
 
 #define DIM     2                       //Primi vicini mezzi
-#define L       1024                    //Dimensione del reticolo
+#define L       64                    //Dimensione del reticolo
 #define BLOCKL  16                      //Threads per blocco
 #define GRIDL   (L/BLOCKL)              //N. Blocchi lineari (per colonna?) 
 #define BLOCKS  ((GRIDL*GRIDL)/2)       //N. Blocchi totali nel reticolo
@@ -27,8 +27,8 @@
 #define TOT_TH  (BLOCKS*THREADS)        //N. di threads totali della griglia.
 
 #define STEP            10
-#define TERM_STEP       100
-#define VUOTO           1000
+#define TERM_STEP       0
+#define VUOTO           1
 #define TOT             (STEP*VUOTO)
 #define J 1
 #define END_SCALE	4294967296.0F
@@ -152,8 +152,7 @@ __global__ void update_metropolis_shared(spin_t *si, unsigned int* a, unsigned i
 	unsigned int Xoffset = blockIdx.x*BLOCKL;
 	unsigned int Yoffset = (2*blockIdx.y+(blockIdx.x+offset)%2)*BLOCKL;
 	
-
-	__global__ spint_t sf[L];
+	spin_t sf[N];
 
 	int ie=0;
 	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
@@ -162,11 +161,33 @@ __global__ void update_metropolis_shared(spin_t *si, unsigned int* a, unsigned i
 	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
 
 
-	int ide = si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)]*(si[(Yoffset+2*threadIdx.y)*(L+1)+(Xoffset+threadIdx.x)]+si[(Yoffset+2*threadIdx.y)*(L-1)+(Xoffset+threadIdx.x)]+si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x+1)]+si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x-1)]);
-	if(MTGPU(n, aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
-		sf[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)] = -si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)];
-		ie -=2*ide;
+	if(threadIdx.y != 0 ){
+		if(threadIdx.x != 0){
+			if(threadIdx.x != L-1){
+				if(threadIdx.y != L-1){
+					int ide = si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)]*(
+							si[(Yoffset+2*threadIdx.y)*(L+1)+(Xoffset+threadIdx.x)]+
+							si[(Yoffset+2*threadIdx.y)*(L-1)+(Xoffset+threadIdx.x)]+
+							si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x+1)]+
+							si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x-1)]);
+					if(MTGPU(n, aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+						sf[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)] = -si[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)];
+						ie -=2*ide;
+					}
+				}
+			}
+		}
 	}
+
+			
+
+	
+
+
+
+
+
+
 	__syncthreads();
 
 	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
@@ -217,8 +238,8 @@ int main(int pippo, char **pero){
 	cudaMemcpy(boltzTex, boltzGPU,(4*DIM+1)*sizeof(float), H_D);
 	cudaBindTexture(NULL, boltzT, boltzTex, (4*DIM+1)*sizeof(float));
 
-	dim3 grid(GRIDL, GRIDL/2);
-	dim3 block(BLOCKL, BLOCKL/2);
+	dim3 grid(2, 1);
+	dim3 block(32,16 );
 
 	dim3 gridRES(GRIDL, GRIDL);
 	dim3 blockRES(BLOCKL, BLOCKL);
@@ -299,9 +320,15 @@ int main(int pippo, char **pero){
 	E = sumE/STEP ;
 	Magnetizzazione/=STEP;
 	
+	cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);	
 	
-	
-	
+	for(int l=0; l<L; ++l){
+		for(int l2=0; l2<L; ++l2)
+			printf(" %i ", s[l2*l]);
+		printf("\n");
+	}
+
+		
 	
 	
 	

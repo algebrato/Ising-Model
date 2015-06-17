@@ -16,7 +16,7 @@ DEBUGMODE	:= true
 ifdef DEVICE
 NVCC		:= nvcc -G
 ESEGUIBILE	:= ../new_ising.x
-OBJ		:= ../obj/new_ising.o ../obj/render.o ../obj/init.o ../obj/fill_ran.o 
+OBJ		:= ../obj/v1.o ../obj/render.o ../obj/init.o ../obj/fill_ran.o 
 CC		:= g++
 
 ifdef DEBUGMODE
