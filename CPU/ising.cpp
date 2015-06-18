@@ -9,7 +9,7 @@
 #include "xorshift.h"
 
 #define DIM 2
-#define TERM_STEP 100000
+#define TERM_STEP 100
 
 
 #define A  1664525
@@ -70,11 +70,6 @@ class ising_lattice {
 			seed_c_=3073685529;
 			seed_d_=3631446976;
 			ok_=0;
-			for(int x = 0; x < size_; ++x)
-				for(int y = 0; y < size_; ++y)
-					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
-			E_ /=2.;
-			E_2_ = pow(E_,2);
 		}//END CTOR
 
 
@@ -92,12 +87,9 @@ class ising_lattice {
 						s_[size_*y+x] = -s_[size_*y+x];
 						++ok_;
 						de_ -= 2*ide;
-
 					}
 				}
 			}
-			E_+=de_;
-			E_2_ = pow(E_,2);
 
 		}//END do_update
 
@@ -106,11 +98,11 @@ class ising_lattice {
 			return ok_;
 		}//END getok 
 		double get_energy(){
-			return E_;
+			for(int x = 0; x < size_; ++x)
+				for(int y = 0; y < size_; ++y)
+					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
+			return E_/=2.;
 		}//END get energy
-		double get_energy2(){
-			return E_2_;
-		}//END get energy sq
 		double get_magnetization_p_s(){
 			M_=0;
 			for(int i=0; i< size_*size_; ++i)
@@ -145,17 +137,24 @@ int main(int argc, char**argv){
 		s.do_update();
 	
 	double M=0;
+	double E=0;
+	double E2=0;
+	double e=0;
 	for(int i=0; i<atoi(argv[4]); i++){
 		s.do_update();
 		M+=s.get_magnetization_p_s();
+		e=s.get_energy();
+		E+=e;
+		E2+=pow(e,2);
 	}
 	double end = getTime();
-	//s.print_lattice();
-	//printf("TOT=%f\n",M);
+	double beta = atof(argv[3]);
+	double size = (double)atoi(argv[1]);
+	E/=(double)atoi(argv[4]);
+	E2/=(double)atoi(argv[4]);
 
 
-
-	printf("%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), s.get_energy(), s.get_energy2());
+	printf("%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), (1/(size*size))*(beta*beta)*(E2-E*E));
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
