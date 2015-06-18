@@ -14,7 +14,7 @@ DEBUGMODE	:= true
 ifdef DEVICE
 NVCC		:= nvcc -G
 ESEGUIBILE	:= ising_CPU.x
-OBJ		:= ising.o 
+OBJ		:= ising.o xorshift.o
 CC		:= g++
 
 ifdef DEBUGMODE

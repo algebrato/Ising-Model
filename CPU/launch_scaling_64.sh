@@ -4,13 +4,14 @@
 
 STEP_MC=1000000
 INIT=1
-SIZE=16
+SIZE=64
 
-for i in 128;
+for i in 64;
 do
 	for k in $(<temp.dat);
 	do
 		/home/algebrato/Ising-Model/CPU/ising_CPU.x $i $INIT $k $STEP_MC >> Ret_$i.dat
-
+	done
+done
 
 exit 0

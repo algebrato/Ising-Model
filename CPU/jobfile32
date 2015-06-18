@@ -5,7 +5,7 @@
 
 cd /home/algebrato/Ising-Model/CPU/
 make
-/home/algebrato/Ising-Model/CPU/launch_scaling_4.sh
+/home/algebrato/Ising-Model/CPU/launch_scaling_32.sh
 
 
 
