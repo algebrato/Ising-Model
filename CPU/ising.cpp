@@ -72,7 +72,7 @@ class ising_lattice {
 			ok_=0;
 			for(int x = 0; x < size_; ++x)
 				for(int y = 0; y < size_; ++y)
-					E_ += s[size_*y+x]*(s[size_*y+((x==0)?size_-1:x-1)]+s[size_*y+((x==size_-1)?0:x+1)]+s[size_*((y==0)?size_-1:y-1)+x]+s[size_*((y==size_-1)?0:y+1)+x]);
+					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
 			E_ /=2.;
 			E_2_ = pow(E_,2);
 		}//END CTOR
@@ -97,7 +97,7 @@ class ising_lattice {
 				}
 			}
 			E_+=de_;
-			E_2_ = pow(E,2);
+			E_2_ = pow(E_,2);
 
 		}//END do_update
 

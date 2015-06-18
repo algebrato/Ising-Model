@@ -2,7 +2,7 @@
 
 #Variazione di beta
 
-STEP_MC=1000000
+STEP_MC=1000
 INIT=1
 SIZE=32
 
