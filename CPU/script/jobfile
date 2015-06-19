@@ -3,9 +3,11 @@
 #PBS -l pmem=300mb
 #PBS -l walltime=90:00:00
 
+SIZE=32
+
 cd /home/algebrato/Ising-Model/CPU/
 make
-/home/algebrato/Ising-Model/CPU/launch_scaling_64.sh
+/home/algebrato/Ising-Model/CPU/launch_scaling.sh $SIZE
 
 
 
