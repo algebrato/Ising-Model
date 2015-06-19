@@ -9,7 +9,7 @@
 #include "xorshift.h"
 
 #define DIM 2
-#define TERM_STEP 100
+#define TERM_STEP 10
 
 
 #define A  1664525
@@ -98,6 +98,7 @@ class ising_lattice {
 			return ok_;
 		}//END getok 
 		double get_energy(){
+			E_ = 0;
 			for(int x = 0; x < size_; ++x)
 				for(int y = 0; y < size_; ++y)
 					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
@@ -152,7 +153,7 @@ int main(int argc, char**argv){
 	double size = (double)atoi(argv[1]);
 	E/=(double)atoi(argv[4]);
 	E2/=(double)atoi(argv[4]);
-
+	
 
 	printf("%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), (1/(size*size))*(beta*beta)*(E2-E*E));
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
