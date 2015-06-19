@@ -1,0 +1,16 @@
+#PBS -V
+#PBS -q good
+#PBS -l pmem=300mb
+#PBS -l walltime=90:00:00
+#PBS -N Ising_test
+
+
+SIZE=32
+
+cd /home/$USER/Ising-Model/CPU/src
+make
+/home/algebrato/Ising-Model/CPU/script/launch_scaling.sh $SIZE
+
+
+
+
