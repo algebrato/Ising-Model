@@ -169,29 +169,30 @@ int main(int argc, char**argv){
 	double E=0;
 	double E2=0;
 	double e=0;
+	double e2=0;
 	double chi_sqr=0;
 	double chi_sqr_2=0;
-	double sigma_E;
-	double sigma_E2;
+	double beta = atof(argv[3]);
+	double size = (double)atoi(argv[1]);
 	for(int i=0; i<atoi(argv[4]); i++){
 		s.do_update();
 		M+=s.get_magnetization_p_s();
 		e=s.get_energy();
+		e2=pow(e,2);
 		E+=e;
-		chi_sqr+=pow((E/(i+1))-e,2);
-		E2+=pow(e,2);
-		chi_sqr_2+=pow((E2/(i+1))-pow(e,2),2);
+		E2+=e2;
+		chi_sqr+=pow(E/(i+1)-e,2);
+		chi_sqr_2+=pow(E2/(i+1)-e2,2);
 	}
 	double end = getTime();
-	double beta = atof(argv[3]);
-	double size = (double)atoi(argv[1]);
 	E/=(double)atoi(argv[4]);
 	E2/=(double)atoi(argv[4]);
-	sigma_E  = pow(chi_sqr/((double)atoi(argv[4])),0.5);
-	sigma_E2 = pow(chi_sqr_2/((double)atoi(argv[4])),0.5); 
+	double sigma_E  = pow(chi_sqr/((double)atoi(argv[4])),0.5);
+	double sigma_E2 = pow(chi_sqr_2/((double)atoi(argv[4])),0.5);
+	double err_per=0.5*(sigma_E/E+sigma_E2/E2);	
+	double Cal_Spec=(1/(size*size)*(beta*beta)*(E2-E*E));
 
-
-	printf("%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), (1/(size*size))*(beta*beta)*(E2-E*E), (1/(size*size))*(beta*beta)*(sigma_E+sigma_E2) );
+	printf("%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
