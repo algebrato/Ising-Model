@@ -39,6 +39,7 @@ class ising_lattice {
 		double *boltz_;
 		double beta_;
 		int J_;
+		double r_t_;  // frazione di spin flippati in un singolo update
 		double M_;
 		double E_;
 		double E_2_;
@@ -52,12 +53,20 @@ class ising_lattice {
 		ising_lattice(int N, string init, double BETA=0.44) : size_(N), J_(1), beta_(BETA) {
 			s_ = (int*)malloc(N*N*sizeof(int));
 			sf_ = (int*)malloc(N*N*sizeof(int));
-			if(init == "1" ){
+			if(init == "rnd"){
+				for(int i=0; i<N*N; ++i){
+					if(rand()/((double)RAND_MAX) < 0.5){
+						s_[i] = -1;
+					}else{
+						s_[i] = 1;
+					}
+				}
+			}else if(init == "1" ){
 				for(int i=0; i<N*N; ++i){
 					s_[i]=1;
 					sf_[i]=1;
 				}
-			}else{
+			}else if(init == "-1"){
 				for(int i=0; i<N*N; ++i){
 					s_[i]=-1;
 					sf_[i]=-1;
@@ -70,13 +79,21 @@ class ising_lattice {
 			seed_c_=3073685529;
 			seed_d_=3631446976;
 			ok_=0;
+			r_t_=0;
+			E_=0;
+			
+			for(int x = 0; x < size_; ++x)
+				for(int y = 0; y < size_; ++y)
+					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
+			E_/=2.;
+
 		}//END CTOR
 
 
 
 	
 		void do_update(){
-			srand(time(NULL));
+			r_t_=0;
 			for(int y=0; y<size_; ++y){
 				for(int x=0; x<size_; ++x){
 					int ide = s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
@@ -86,24 +103,28 @@ class ising_lattice {
 					if(ide <= 0 || r < boltz_[ide+2*DIM]){
 						s_[size_*y+x] = -s_[size_*y+x];
 						++ok_;
+						++r_t_;
 						de_ -= 2*ide;
 					}
 				}
 			}
-
+			E_+=de_;
+			r_t_/=((double)size_*size_);
+			de_=0;
 		}//END do_update
 
 
 		int get_ok_MC(){
 			return ok_;
 		}//END getok 
+		
+		
 		double get_energy(){
-			E_ = 0;
-			for(int x = 0; x < size_; ++x)
-				for(int y = 0; y < size_; ++y)
-					E_ += s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
-			return E_/=2.;
-		}//END get energy
+			return E_;
+		}//END get energy;
+		
+		
+		
 		double get_magnetization_p_s(){
 			M_=0;
 			for(int i=0; i< size_*size_; ++i)
@@ -111,13 +132,20 @@ class ising_lattice {
 			if(M_<0) M_*=-1;
 			return M_/(size_*size_);
 		}//END get mag
-		void print_lattice(){
+
+
+		void get_lattice(){
 			for(int i=0; i< size_; ++i){
 				for(int k=0; k< size_; ++k)
 					printf(" %i ", s_[k+size_*i]);
 				printf("\n");
 			}
 		}//END print lattice
+
+		double get_order_par(){
+			return r_t_;
+		}
+		
 
 
 
@@ -133,6 +161,8 @@ int main(int argc, char**argv){
 	//argv4 -> montecarlo step;
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
+	
+#ifdef EQULIBRIUM
 	double start = getTime();
 	for(int i=0; i < TERM_STEP; ++i)
 		s.do_update();
@@ -159,6 +189,13 @@ int main(int argc, char**argv){
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
+#else
+	for(int i=0; i<atoi(argv[4]); ++i){
+		s.do_update();
+		printf("%i\t%f\n",i,s.get_order_par());
+	}
+#endif
+
 }
 
 
