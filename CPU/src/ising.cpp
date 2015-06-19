@@ -11,7 +11,6 @@
 #define DIM 2
 #define TERM_STEP 10
 
-
 #define A  1664525
 #define B  1013904223
 #define MULT2 4.6566128752457969e-10f
@@ -162,7 +161,6 @@ int main(int argc, char**argv){
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
 	
-#ifdef EQULIBRIUM
 	double start = getTime();
 	for(int i=0; i < TERM_STEP; ++i)
 		s.do_update();
@@ -189,13 +187,13 @@ int main(int argc, char**argv){
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
-#else
+
+/*
 	for(int i=0; i<atoi(argv[4]); ++i){
 		s.do_update();
 		printf("%i\t%f\n",i,s.get_order_par());
 	}
-#endif
-
+*/
 }
 
 
