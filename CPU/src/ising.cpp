@@ -9,7 +9,7 @@
 #include "xorshift.h"
 
 #define DIM 2
-#define TERM_STEP 10
+#define TERM_STEP 100
 
 #define A  1664525
 #define B  1013904223
@@ -160,7 +160,7 @@ int main(int argc, char**argv){
 	//argv4 -> montecarlo step;
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
-	
+/*	
 	double start = getTime();
 	for(int i=0; i < TERM_STEP; ++i)
 		s.do_update();
@@ -170,39 +170,44 @@ int main(int argc, char**argv){
 	double E2=0;
 	double e=0;
 	double e2=0;
+	double m=0;
 	double chi_sqr=0;
 	double chi_sqr_2=0;
+	double chi_sqr_m=0;
 	double beta = atof(argv[3]);
 	double size = (double)atoi(argv[1]);
 	for(int i=0; i<atoi(argv[4]); i++){
 		s.do_update();
-		M+=s.get_magnetization_p_s();
+		m=s.get_magnetization_p_s();
 		e=s.get_energy();
 		e2=pow(e,2);
+		M+=m;
 		E+=e;
 		E2+=e2;
-		chi_sqr+=pow(E/(i+1)-e,2);
-		chi_sqr_2+=pow(E2/(i+1)-e2,2);
+		chi_sqr+=pow(E/(i+1)-e,2.);
+		chi_sqr_2+=pow(E2/(i+1)-e2,2.);
+		chi_sqr_m+=pow(M/(i+1)-m,2.);
 	}
 	double end = getTime();
 	E/=(double)atoi(argv[4]);
 	E2/=(double)atoi(argv[4]);
 	double sigma_E  = pow(chi_sqr/((double)atoi(argv[4])),0.5);
 	double sigma_E2 = pow(chi_sqr_2/((double)atoi(argv[4])),0.5);
+	double sigma_m  = pow(chi_sqr_m/((double)atoi(argv[4])),0.5);
 	double err_per=0.5*(sigma_E/E+sigma_E2/E2);	
 	double Cal_Spec=(1/(size*size)*(beta*beta)*(E2-E*E));
 
-	printf("%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec ); //rifare la parte di errore, è sbagliata.
+	printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
 	return 0;
+*/
 
-/*
 	for(int i=0; i<atoi(argv[4]); ++i){
 		s.do_update();
 		printf("%i\t%f\n",i,s.get_order_par());
 	}
-*/
+
 }
 
 
