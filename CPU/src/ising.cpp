@@ -160,7 +160,7 @@ int main(int argc, char**argv){
 	//argv4 -> montecarlo step;
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
-/*	
+	
 	double start = getTime();
 	for(int i=0; i < TERM_STEP; ++i)
 		s.do_update();
@@ -199,14 +199,14 @@ int main(int argc, char**argv){
 
 	printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
-	//printf("%f\t\t%i\t%f microsec.\n",atof(argv[3]), atoi(argv[1]), (end-start)/(((float)(atoi(argv[1])*atoi(argv[1])))*(TERM_STEP+atoi(argv[4]))));
+	printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
 	return 0;
-*/
 
-	for(int i=0; i<atoi(argv[4]); ++i){
+
+	/*for(int i=0; i<atoi(argv[4]); ++i){
 		s.do_update();
 		printf("%i\t%f\n",i,s.get_order_par());
-	}
+	}*/
 
 }
 

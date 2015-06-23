@@ -15,8 +15,8 @@ DEBUGMODE	:= true
 
 ifdef DEVICE
 NVCC		:= nvcc -G
-ESEGUIBILE	:= ising_cu.x
-OBJ		:= ising.o fill_ran.o
+ESEGUIBILE	:= ising_cu.x 
+OBJ		:= ising.o fill_ran.o get_time.o
 CC		:= g++
 
 ifdef DEBUGMODE
