@@ -12,7 +12,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 4096
+#define L 512
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -123,8 +123,15 @@ int main(int argc, char**argv){
 	double m=0;
 	double M=0;
 
-	double start = getTime();	
-	for(int i=0; i < STEP_MC; i++){
+	double start = getTime();
+	for(int i=0; i < 1000; ++i){
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1);
+	}
+
+
+
+	for(int i=0; i < STEP_MC; ++i){
 		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0);
 		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1);
 		cudaThreadSynchronize();
@@ -143,7 +150,7 @@ int main(int argc, char**argv){
 	M/=((double)STEP_MC);
 
 	printf("%f\t%f\n", BETA, M);
-	printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 
 	return 0;
 
