@@ -12,7 +12,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
+#define L 128
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -49,7 +49,6 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
 	int tidx = threadIdx.x + blockDim.x*blockIdx.x;
 	int tidmy= threadIdx.y + blockDim.y*blockIdx.y;
 	int tidy = 2*tidmy+((tidx+offset)%2);
-	
 	int ide = s_[L*tidy+tidx]*(s_[L*tidy+((tidx==0)?L-1:tidx-1)]+s_[L*tidy+((tidx==L-1)?0:tidx+1)]+s_[L*((tidy==0)?L-1:tidy-1)+tidx]+s_[L*((tidy==L-1)?0:tidy+1)+tidx]);
 
 	//Inizializzo i semi
@@ -64,7 +63,25 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
 		ie -=2*ide;
 	}
 	__syncthreads();
+	
+	a[tidy+tidx] = *aa;
+	b[tidy+tidx] = *bb;
+	c[tidy+tidx] = *cc;
+	d[tidy+tidx] = *dd;
+
+	__syncthreads();
 }
+
+void get_lattice(spin_t *s_){
+	for(int y=0; y<L; ++y){
+		for(int x=0; x<L; ++x)
+			printf("%i\t",s_[y*L+x]);
+		printf("\n");
+	}
+
+}
+
+
 
 
 int main(int argc, char**argv){
@@ -72,7 +89,7 @@ int main(int argc, char**argv){
 	UI *a, *a_d, *b, *b_d, *c, *c_d, *d, *d_d;
 	float *vec_mag, *vec_mag_d;
 
-	dim3 grid(GRIDL, GRIDL/2);
+	dim3 grid(GRIDL, GRIDL);
 	dim3 block(BLOCKL, BLOCKL/2);
 	dim3 gridRES(GRIDL, GRIDL);
 	dim3 blockRES(BLOCKL, BLOCKL);
@@ -145,13 +162,14 @@ int main(int argc, char**argv){
 		M+=m;
 		m=0;
 	}
+
 	double end = getTime();
 
 	M/=((double)STEP_MC);
 
 	printf("%f\t%f\n", BETA, M);
 	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
-
+	
 	return 0;
 
 }
