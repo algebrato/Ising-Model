@@ -12,14 +12,13 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 128
+#define L 512
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
-#define BLOCKS ((GRIDL*GRIDL)/2)
+#define BLOCKS ((GRIDL*GRIDL))
 #define THREADS ((BLOCKL*BLOCKL)/2)
 #define N (L*L)
 #define TOT_TH  (BLOCKS*THREADS) 
-
 
 typedef int spin_t;
 typedef unsigned int UI;
@@ -52,22 +51,30 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
 	int ide = s_[L*tidy+tidx]*(s_[L*tidy+((tidx==0)?L-1:tidx-1)]+s_[L*tidy+((tidx==L-1)?0:tidx+1)]+s_[L*((tidy==0)?L-1:tidy-1)+tidx]+s_[L*((tidy==L-1)?0:tidy+1)+tidx]);
 
 	//Inizializzo i semi
-	unsigned int *aa = &a[tidy+tidx];
-	unsigned int *bb = &b[tidy+tidx];
-	unsigned int *cc = &c[tidy+tidx];
-	unsigned int *dd = &d[tidy+tidx];
-	int ie=0;
+	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
 
+	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	
+	__syncthreads();
+
+
+
+	int ie=0;
 	if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
 		s_[L*tidy+tidx] = -s_[L*tidy+tidx];
 		ie -=2*ide;
 	}
+	
 	__syncthreads();
 	
-	a[tidy+tidx] = *aa;
-	b[tidy+tidx] = *bb;
-	c[tidy+tidx] = *cc;
-	d[tidy+tidx] = *dd;
+	
+	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
+	b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
+	c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
+	d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 
 	__syncthreads();
 }
@@ -116,8 +123,7 @@ int main(int argc, char**argv){
 	
 
 	fill_ran_vec2(a, b, c, d, TOT_TH);
-
-
+	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&c_d, 2*TOT_TH*(sizeof(unsigned int)));
@@ -159,7 +165,7 @@ int main(int argc, char**argv){
 		for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
 			m+=vec_mag[bl];
 		m = m / (GRIDL*GRIDL);
-		M+=m;
+		M+=fabs(m);
 		m=0;
 	}
 

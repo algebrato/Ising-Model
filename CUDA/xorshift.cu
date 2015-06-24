@@ -4,7 +4,7 @@
 #define END_SCALE       4294967296.0F
 
 
-__device__ float MTGPU(unsigned int *s1, unsigned int *s2, unsigned int *s3, unsigned int *s4){
+__device__ __host__ float MTGPU(unsigned int *s1, unsigned int *s2, unsigned int *s3, unsigned int *s4){
 
 	unsigned int x, y, z, w, t;
 
@@ -12,14 +12,14 @@ __device__ float MTGPU(unsigned int *s1, unsigned int *s2, unsigned int *s3, uns
 	y=*s2;
 	z=*s3;
 	w=*s4;
-	
-	for(int i=0; i<30; i++)
+
+	for(int i=0; i<50; i++)
 		t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
 	*s1 = x;
 	*s2 = y;
-	*s3 = z;
+	*s3 = z;	
 	*s4 = w;
-	
+
 	return w / END_SCALE;
 }
 

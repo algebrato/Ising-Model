@@ -22,13 +22,13 @@ CC		:= g++
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
 ARCH 		:= -arch=sm_20
-LIBS		:= -lGL -lGLU -lglut -lcurand
-INC		:= -I/home/algebrato/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc/ -I/home/algebrato/NVIDIA_GPU_Computing_SDK/shared/inc/
+LIBS		:= 
+INC		:= 
 else
 FLAGS		:= -O2
 ARCH		:= -arch=sm_20
-LIBS		:= -lGL -lGLU -lglut -lcurand
-INC		:= -I/home/algebrato/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc/ -I/home/algebrato/NVIDIA_GPU_Computing_SDK/shared/inc/
+LIBS		:= 
+INC		:= 
 endif
 
 %.o : %.cpp
