@@ -1,9 +1,10 @@
 #include<iostream>
 #include<stdlib.h>
+#include<curand_kernel.h>
 #include"xorshift.cu"
 #include"fill_ran.h"
 #include"get_time.h"
-
+#include<time.h>
 using namespace std;
 
 
@@ -44,7 +45,7 @@ __global__ void get_magnetization(spin_t *s_, float *vec_mag){
 }
 
 
-__global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
+__global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
 	int tidx = threadIdx.x + blockDim.x*blockIdx.x;
 	int tidmy= threadIdx.y + blockDim.y*blockIdx.y;
 	int tidy = 2*tidmy+((tidx+offset)%2);
@@ -52,7 +53,8 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
 
 	//Inizializzo i semi
 	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
-
+	//curandState localState = globalState[n];
+	//float stopId = curand_uniform(&localState);
 	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
 	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
 	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
@@ -70,11 +72,20 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset){
 	
 	__syncthreads();
 	
-	
+	//globalState[n] = localState;
 	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
 	b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
 	c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
 	d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
+	
+
+	__shared__ int deltaE[THREADS];
+	deltaE[n] = ie;
+	for(int stride = THREADS>>1; stride > 0 ; stride >>=1){
+		__syncthreads();
+		if(n < stride) deltaE[n] += deltaE[n+stride];
+	}
+	if(n == 0) energie[blockIdx.y*GRIDL+blockIdx.x] += deltaE[0];		
 
 	__syncthreads();
 }
@@ -88,6 +99,19 @@ void get_lattice(spin_t *s_){
 
 }
 
+int cpu_energy(spin_t *s){
+        int ie = 0;
+        for(int x = 0; x < L; ++x)
+                for(int y = 0; y < L; ++y)
+                        ie += s[L*y+x]*(s[L*y+((x==0)?L-1:x-1)]+s[L*y+((x==L-1)?0:x+1)]+s[L*((y==0)?L-1:y-1)+x]+s[L*((y==L-1)?0:y+1)+x]);
+        return ie/2;
+}
+
+
+/*__global__ void setup_kernel ( curandState * state, unsigned long seed ){
+	int id = threadIdx.x  + blockIdx.x + blockDim.x;
+	curand_init ( seed, id , id, &state[id] );
+}*/
 
 
 
@@ -95,12 +119,18 @@ int main(int argc, char**argv){
 	spin_t *s, *sD;
 	UI *a, *a_d, *b, *b_d, *c, *c_d, *d, *d_d;
 	float *vec_mag, *vec_mag_d;
+	int *energie, *energie_d;	
+	time_t t;
+	time(&t);
 
 	dim3 grid(GRIDL, GRIDL);
 	dim3 block(BLOCKL, BLOCKL/2);
 	dim3 gridRES(GRIDL, GRIDL);
 	dim3 blockRES(BLOCKL, BLOCKL);
-
+	
+	/*curandState* devStates;
+	cudaMalloc ( &devStates, TOT_TH*sizeof( curandState ) );
+	setup_kernel <<< grid, block >>> ( devStates, (unsigned long) t );*/
 
 
 	float BETA    = atof(argv[1]);
@@ -143,20 +173,30 @@ int main(int argc, char**argv){
 
 	vec_mag = (float*)malloc( (GRIDL*GRIDL)*sizeof(float));
 	cudaMalloc((void**)&vec_mag_d, (GRIDL*GRIDL)*sizeof(float));
+	energie = (int*)malloc(BLOCKS*sizeof(int));
+	cudaMalloc((void**)&energie_d, BLOCKS*sizeof(int));	
+		for(int i=0; i<BLOCKS; i++)
+			energie[i]=0;
+	cudaMemcpy(energie_d, energie, BLOCKS*(sizeof(int)), H_D);
+
+	int ie = cpu_energy(s);
+	int sumE = ie;
+	double E=0;
+	double E_2=0;
 	double m=0;
 	double M=0;
-
+	
 	double start = getTime();
 	for(int i=0; i < 1000; ++i){
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0);
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
 
 	for(int i=0; i < STEP_MC; ++i){
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0);
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
@@ -167,13 +207,23 @@ int main(int argc, char**argv){
 		m = m / (GRIDL*GRIDL);
 		M+=fabs(m);
 		m=0;
+		
+		cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
+		for(int bl=0; bl < BLOCKS; bl++)
+			sumE+=energie[bl];
+		E += (double)sumE;
+		E_2 += (double)(sumE*sumE);
+		sumE=ie;
 	}
-
 	double end = getTime();
+	
+	E_2 /= (double)STEP_MC;
+	E   /= (double)STEP_MC;
+	double Cal_Spec=(1/((double)N))*(E_2-E*E)*((double)BETA*(double)BETA);	
 
 	M/=((double)STEP_MC);
 
-	printf("%f\t%f\n", BETA, M);
+	printf("%f\t%f\t%f\n", BETA, M, Cal_Spec);
 	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;

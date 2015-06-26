@@ -13,8 +13,8 @@ __device__ __host__ float MTGPU(unsigned int *s1, unsigned int *s2, unsigned int
 	z=*s3;
 	w=*s4;
 
-	for(int i=0; i<50; i++)
-		t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+	//for(int i=0; i<50; i++) //il mix potrebbe in questo caso non essere una buona idea.
+	t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
 	*s1 = x;
 	*s2 = y;
 	*s3 = z;	

@@ -22,7 +22,7 @@ CC		:= g++
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
 ARCH 		:= -arch=sm_20
-LIBS		:= 
+LIBS		:=  
 INC		:= 
 else
 FLAGS		:= -O2

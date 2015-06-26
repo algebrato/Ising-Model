@@ -18,10 +18,10 @@ using namespace std;
 int main(){
 	fstream uscita;
 	uscita.open("nodi_passo_E6.dat",ios::out);
-	uscita<<"x\t"<<"y\t"<<"z\t"<<"w\t"<<"t\t"<<endl;
+	//uscita<<"x\t"<<"y\t"<<"z\t"<<"w\t"<<"t\t"<<endl;
 
 	int passo=100000000;
-	unsigned int x, y, z, w, t;
+	unsigned int x=1, y=2, z=3, w=4, t=5;
 	for(int i=1;; i++){
 		t = x^x<<11;
 		x=y; 
@@ -29,7 +29,7 @@ int main(){
 		z=w;
 		w^=w>>19^t^t >> 8;
 		if(i%passo==0)
-			uscita<<x<<"\t"<<y<<"\t"<<z<<"\t"<<w<<"\t"<<t<<endl;
+			uscita<<x<<"\t"<<y<<"\t"<<z<<"\t"<<w<<endl;
 	}
 
 

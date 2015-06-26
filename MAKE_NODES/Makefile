@@ -1,5 +1,5 @@
 CC    := g++
-LIBS  := -lntl
+LIBS  := 
 FLAGS := -O3
 EXE1  := random_e6.x
 EXE2  := random_ntl.x
