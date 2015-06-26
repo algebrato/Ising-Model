@@ -11,11 +11,6 @@
 #define DIM 2
 #define TERM_STEP 100
 
-#define A  1664525
-#define B  1013904223
-#define MULT2 4.6566128752457969e-10f
-#define RAN(n) (n = A*n + B)
-
 using namespace std;
 
 double getTime(){
@@ -96,7 +91,6 @@ class ising_lattice {
 			for(int y=0; y<size_; ++y){
 				for(int x=0; x<size_; ++x){
 					int ide = s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
-					//double r =  fabs(RAN(seed_a_)*MULT2);
 					//double r = rand()/(double)RAND_MAX;
 					double r = MTGPU(&seed_a_,&seed_b_,&seed_c_,&seed_d_);
 					if(ide <= 0 || r < boltz_[ide+2*DIM]){
