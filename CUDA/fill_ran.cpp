@@ -32,6 +32,14 @@ void fill_ran_vec2 (unsigned int *a, unsigned int *b, unsigned int *c, unsigned 
 
 }
 
+void fill_ran_vec3(unsigned int *a, unsigned int *b, unsigned int *c, unsigned int *d, int N){
+	for(int i=0; i<N; ++i){
+		a[i]=((i-1) <<11)^((i-1)>>28);
+		b[i]=((N*i-1) <<11)^((N*i-1)>>28);
+		c[i]=(((N+1)*i-1) <<11)^(((N+1)*i-1)>>28);
+		d[i]=(((N+2)*i-1) <<11)^(((N+2)*i-1)>>28);
+	}
+}
 
 
 

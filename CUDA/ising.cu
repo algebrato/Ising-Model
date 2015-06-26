@@ -13,7 +13,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
+#define L 128
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL))
@@ -152,7 +152,7 @@ int main(int argc, char**argv){
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
 
-	fill_ran_vec2(a, b, c, d, TOT_TH);
+	fill_ran_vec3(a, b, c, d, TOT_TH);
 	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
