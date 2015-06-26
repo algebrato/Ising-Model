@@ -13,7 +13,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
+#define L 32
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL))
