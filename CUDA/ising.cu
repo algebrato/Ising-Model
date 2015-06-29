@@ -302,13 +302,16 @@ int main(int argc, char**argv){
 		for(int bl=0; bl < BLOCKS; bl++)
 			sumE+=energie[bl];
 		E += (double)sumE;
-		E_2 += (double)(sumE*sumE);
+		E_2 += pow((double)sumE,2.);
 		sumE=ie;
 	}
 	double end = getTime();
+	//cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);
+	//get_lattice(s);
 	
-	E_2 /= (double)STEP_MC;
+	E_2 /= (long double)STEP_MC;
 	E   /= (double)STEP_MC;
+	printf("%f\n",E);
 	double Cal_Spec=(1/((double)N))*(E_2-E*E)*((double)BETA*(double)BETA);	
 
 	M/=((double)STEP_MC);
