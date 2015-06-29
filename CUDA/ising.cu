@@ -13,7 +13,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 4096
+#define L 512
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -290,7 +290,7 @@ int main(int argc, char**argv){
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
-		/*cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
+		cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
 		
 		for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
 			m+=vec_mag[bl];
@@ -303,7 +303,7 @@ int main(int argc, char**argv){
 			sumE+=energie[bl];
 		E += (double)sumE;
 		E_2 += (double)(sumE*sumE);
-		sumE=ie;*/
+		sumE=ie;
 	}
 	double end = getTime();
 	
@@ -313,8 +313,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	//printf("%f\t%f\t%f\n", BETA, M, Cal_Spec);
-	printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
+	printf("%f\t%f\t%f\n", BETA, M, Cal_Spec);
+	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
