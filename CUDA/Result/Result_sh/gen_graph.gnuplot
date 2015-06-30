@@ -29,7 +29,7 @@ set multiplot
 	set autoscale
 	set ylabel "Calore specifico per Spin"
 	set title "Calore Specifico"
-	plot "Ret_32.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "32x32", "" u 1:3 w l lc 1  title "", "Ret_64.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "64x64", "" u 1:3 w l lc 3  title "", "Ret_128.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6  title "128x128", "" u 1:3 w l lc 5 title "", "Ret_256.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "256x256", "" u 1:3 w l lc 7 title "", "Ret_512.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "512x512", "" u 1:3 w l lc 9 title ""
+	plot "Ret_32.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "32x32", "" u 1:3 w l lc 1  title "", "Ret_64.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "64x64", "" u 1:3 w l lc 3  title "", "Ret_128.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6  title "128x128", "" u 1:3 w l lc 5 title ""#, "Ret_256.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "256x256", "" u 1:3 w l lc 7 title "", "Ret_512.dat" u 1:3:(0.1) with yerrorbars pt 7 ps 0.6 title "512x512", "" u 1:3 w l lc 9 title ""
 	
 	#set origin 0.5,0
 	#set size 0.5,0.5

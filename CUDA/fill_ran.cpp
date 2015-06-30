@@ -2,7 +2,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
-
+#define END_SCALE 4294967296.0F
 
 using namespace std;
 
@@ -42,6 +42,26 @@ void fill_ran_vec3(unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 }
 
 
+float fill_ran_vec4(unsigned int *a, unsigned int *b, unsigned int *c, unsigned int *d, int N){
+	unsigned int x, y, z, w, t;
+
+	cout << N << endl;
+        x=a[0];
+        y=b[0];
+        z=c[0];
+        w=d[0];
+	for(int k=1; k<N; k++){
+		for(int i=0; i<10000; ++i){//Mixing
+			t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
+		}
+	a[k]=x;
+	b[k]=y;
+	c[k]=z;
+	d[k]=w;
+	}
+
+	return w / END_SCALE;
+}
 
 
 
