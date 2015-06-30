@@ -52,7 +52,7 @@ void fill_ran_vec4(unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 
 
         a[0]=2678936131;
-        b[0]==1801065994;
+        b[0]=1801065994;
         c[0]=3925136598;
         d[0]=285088606;
 
