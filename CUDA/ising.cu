@@ -311,7 +311,6 @@ int main(int argc, char**argv){
 	
 	E_2 /= (long double)STEP_MC;
 	E   /= (double)STEP_MC;
-	printf("%f\n",E);
 	double Cal_Spec=(1/((double)N))*(E_2-E*E)*((double)BETA*(double)BETA);	
 
 	M/=((double)STEP_MC);
