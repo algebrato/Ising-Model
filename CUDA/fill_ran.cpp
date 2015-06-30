@@ -48,10 +48,19 @@ void fill_ran_vec3(unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 void fill_ran_vec4(unsigned int *a, unsigned int *b, unsigned int *c, unsigned int *d, int N){
 	unsigned int x, y, z, w, t;
 
-        x=a[0];
-        y=b[0];
-        z=c[0];
-        w=d[0];
+	//cout << N << endl;
+
+
+        a[0]=2678936131;
+        b[0]==1801065994;
+        c[0]=3925136598;
+        d[0]=285088606;
+
+	x=a[0];
+	y=b[0];
+	z=c[0];
+	w=d[0];
+
 	for(int k=1; k<N; k++){
 		for(int i=0; i<10000; ++i){//Mixing
 			t=x^x<<11;x=y;y=z;z=w;w^=w>>19^t^t>>8;
@@ -61,6 +70,8 @@ void fill_ran_vec4(unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 	c[k]=z;
 	d[k]=w;
 	}
+	//printf("%i\t%i\t%i\t%i\n",a[0],b[0],c[0],d[0]);
+	//printf("%i\t%i\t%i\t%i\n",a[1],b[1],c[1],d[1]);
 }
 
 
