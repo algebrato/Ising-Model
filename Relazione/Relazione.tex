@@ -32,7 +32,7 @@
 \date{}
 \maketitle
 \section*{Introduzione}
-Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il modello di Ising 2D. \`E un modello analitico, nel senso che al limite termodinaco esiste una soluzione analitica esatta. E' stato possibile riportare il codice, operazione per operazione (compresa la generazione dei numeri pseudorandom) da singola CPU all fine parallelizzazione delle GPU, in questo modo sarà possibile valutare lo speed-up di prestazioni in modo quantitativo perfettamente consistente. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata meno consistente in quanto si sarebbero andati a comparare risultati ottenuti con implementazioni diverse. I punti che verranno trattati in questo lavoro sono i seguenti:
+Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il modello di Ising 2D. \`E un modello analitico, nel senso che al limite termodinaco esiste una soluzione analitica esatta. E' stato possibile riportare il codice, operazione per operazione (compresa la generazione dei numeri pseudorandom) da singola CPU alla fine parallelizzazione delle GPU, in questo modo sarà possibile valutare lo speed-up di prestazioni in modo quantitativo perfettamente consistente. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata meno consistente in quanto si sarebbero andati a comparare risultati ottenuti con implementazioni diverse. I punti che verranno trattati in questo lavoro sono i seguenti:
 \begin{itemize}
 	\item Breve introduzione sul modello usato;
 	\item Implementazione del codice;
@@ -44,9 +44,9 @@ Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il 
 \section{Scelta del modello}
 Il modello di Ising-2D è un modello che si presta molto bene ad essere parallelizzato, in quanto è un tipico modello interagente a corto range. In questo modo è possibile pensare ad una strategia di parallelizzazione efficace. Brevemente, il modello di Ising è caratterizzato da un reticolo (ad esempio ipercubico) in $D$ dimensioni. Ad ogni cella del reticolo viene associato uno spin si che può essere solo del tipo $s_i=\lbrace +1, -1 \rbrace$ a seconda che la direzione del dipolo magnetico (o spira), associato alla cella $i-esima$ del reticolo risulti verso l'alto o verso il basso. Il sistema è descritto dall’Hamiltoniana di Ising
 \newl{\mathcal{H}=-J\sum_{\langle i,j\rangle}s_is_j -h\sum_{i}s_i}
-dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è fatta su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e campo magnetico esterno nullo, quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una transizione di fase in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema si comporta in modo paramagnetico. Per temperature inferiori invece si ha un fenomeno di magnetizzazione spontanea. Le principali grandezze fisiche che possono essere calcolate sono la magnetizzazione media del sistema $\langle M\rangle$  e la capacità termica a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantità estensive sono divergenti nel limite termodinamico. Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = D \times D$ spins che si desidera confrontare per diversi size. È utile pertanto confrontare la densità di energia $e = E /N$, la densità di calore specifico $c_V = CV /N$ e di magnetizzazione che è la variabile coniugata al campo esterno $h$
+dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è fatta su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e campo magnetico esterno nullo, quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una transizione di fase in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema si comporta in modo paramagnetico. Per temperature inferiori invece si ha un fenomeno di magnetizzazione spontanea. Le principali grandezze fisiche che possono essere calcolate sono la magnetizzazione media del sistema $\langle M\rangle$  e la capacità termica a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantità estensive sono divergenti nel limite termodinamico. Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = D \times D$ spins che si desidera confrontare per diversi size. È utile pertanto confrontare la densità di calore specifico $c_V = CV /N$ e di magnetizzazione che è la variabile coniugata al campo esterno $h$
 \newl{m=\frac{1}{N}\langle\sum_is_i\rangle}
-Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato nel seguente modo: per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$. La lunghezza di correlazione è molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$, in questo modo $\langle M \rangle$ risulta nulla. Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il modello di Ising 2D, presenta una transizione di fase netta. Il sistema passa, in modo spontaneo, da una situazione di ordine in cui gli spin sono orientati prevalentemente nella stessa direzione quindi hanno in maggioranza valore $+1$ oppure $-1$. I due casi, per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins, per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $m = 0$. Per modelli finiti sufficientemente grandi è ugualmente possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ . Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising, con molti spin a valore $+1$ sarà favorito. In questo modo, per temperature inferiori a quella critica, si hanno dei valori di magnetizzazione non nulli e dello stesso segno ed è quindi possibile valutare l’entità della magnetizzazione spontanea.
+Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato nel seguente modo: per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione è molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$, in questo modo $\langle M \rangle$ risulta nulla. Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il modello di Ising 2D, presenta una transizione di fase netta. Il sistema passa, in modo spontaneo, da una situazione di ordine in cui gli spin sono orientati prevalentemente nella stessa direzione quindi hanno in maggioranza valore $+1$ oppure $-1$. I due casi, per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins, per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $\langle M \rangle = 0$. Per modelli finiti sufficientemente grandi è ugualmente possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ . Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising, con molti spin a valore $+1$ sarà favorito. In questo modo, per temperature inferiori a quella critica, si hanno dei valori di magnetizzazione non nulli e dello stesso segno ed è quindi possibile valutare l’entità della magnetizzazione spontanea.
 \subsection{Algoritmo di Metropolis}
 Dato che le fluttuazioni di energia, rispetto all'energia totale del sistema, sono piccole, un modo sufficientemente efficiente di generare delle mosse Monte Carlo, è quello definito dalla \textit{dinamica a singolo spin-flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso inizialmente in modo casuale. Lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. In questo modo è possibile definire la probabilità di selezione come
 \newl{g(\mu\to\nu)=\frac{1}{N}\,.}
@@ -130,13 +130,52 @@ l'equazione $(\ref{xor:sh})$ risulta molto semplice \texttt{x\;=\;x\;\^\;(x<<a)}
 } 
 dove $\mathbf{R}$ è la matrice di \textit{spostamento a destra} ed è definita come $\mathbf{R} = \mathbf{L}^T$. I parametri $a,\, b,\, c,\, d$ sono le posizioni di shift rispettivamente a sinistra, destra, sinistra e ancora a destra. \`E stato dimostrato che per valori opportuni dei parametri $a,\, b,\, c,\, d$\footnote{Marsaglia nel suo articolo consiglia $a=20$, $b=11$, $c=27$, $d=6$} si hanno sequenze di numeri pseudo-random con periodo di $2^w-1$. In questo caso $w=128$ quindi la catena di numeri è molto lunga ed è adeguata per essere utilizzata in simulazioni lunghe. La generazione in parallelo di numeri pseudo-random, avviene tramite l'allocazione in memoria di quattro vettori contenenti i seed iniziali. La scelta del seed ha un ruolo fondamentale tutto questo. Ad ogni nodi di calcolo (nel nostro caso delle GPU quindi ad ogni threads) deve esserci associato il suo quartetto di seed iniziali in modo tale che le varie sottocatene associate ai vari threads non si sovrappongono. Se ciò si verificasse, si perderebbe moltissima statistica perchè le catene associate ad ogni threads sarebbero praticamente tutte molto simili, si introdurrebbe quindi un forte accoppiamento dovuto alla totale (o anche pariziale) pedita della della statisticità. Per evitare questo, la catena totale di numeri PR viene spezzata in punti ben precisi, in particolar modo vengono presi valori di $a,\, b,\, c,\, d$ ongi 10000 generazioni (numero di step Monte Carlo della simulazione) e vengono assegnati ad ogni threads. In questo modo ogni thread genera catene distanti 10000 numeri, esattamente il numero di step Monte Carlo, escludendo ogni tipo di sovrapposizione tra le catene.
 \section{Consistenza del modello Fisico}
-Nelle Figure [\ref{figura:CPU}] e [\ref{figura:GPU}] sono raffigurati tre grafici. Il primo è la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin, sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
+Nelle Figure [\ref{figura:CPU}] e [\ref{figura:GPU}] sono raffigurati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin, sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
 \newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
 Effettuando un fit dei valori intorno alla temperatura critica, mettendo come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. Nelle immagini \ref{figura:CPU} e \ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti.
+\section{Discussione sulla diversità dei risultati}
+In Tabella \ref{tab:mag} sono riportati i valori di magnetizzazione per un reticolo $32\times32$, con relativo errore, in funzione di $\beta$. Come detto in precedenza, si è riusciti a portare completamente, operazione per operazione, l'algoritmo usato su CPU alle schede grafiche, quindi ci si aspettava che dopo lo stesso numero di passi di termalizzazione e di step Monte Carlo, il dato sia proprio identicamente lo stesso. Come si può notare in tabella i dati, seppur compatibili tra loro all'interno del proprio errore, non sono identicamente lo stesso dato. La spiegazione consiste nel modo in cui vengono estratti i numeri pseudocasuali. Nel caso dell CPU, in modo seriale, l'evoluzione di uno spin  è contraddistinto da un certo numero PR della catena e così via in modo ordinato su tutta l'estensione del reticolo, per tutti gli step Monte Carlo usati. Nel caso della GPU, la catena di numeri pseudo random viene suddivisa in sottocatene. Il numero pseudorandom che caratterizava l'evoluzione dello spin nominato precedentemente, sulla GPU può caratterizzare un altro spin. \`E  quindi corretto ritrovarsi con valori differenti, ma molto vicini tra loro e compatibilissimi all'interno del loro errore statistico. In conclusione i dati ci stanno dicendo è che nonostante ci sia un rimescolamento dei numeri casuali, la statistica del sistema rimane sempre la stessa, quindi i due dati sono perfettamente compatibili.   
 
+\begin{table}
+\begin{center}
+\begin {tabular}{c|c|c|c|c}
+\hline
+\hline
+$\beta$ & $\langle  M \rangle$-GPU & $\sigma_{\langle  M \rangle-GPU}$ & $\langle  M \rangle$-CPU & $\sigma_{\langle  M \rangle-CPU}$        \\
+\hline
+$0,250000$ &    $0,052712$   &     $0,039474$ &  $0,050932$  &  $0,038267$\\
+$0,300000$ &     $0,066671$     &   $0,050460$ &  $0,066645$  &  $0,049545$\\
+$0,350000$ &      $0,098850$    &    $0,072529$ &  $0,097678$  &  $0,073882$\\
+$0,400000$ &      $0,201638$   &     $0,137473$  &  $0,188406$  &  $0,134147$\\
+$0,410000$ &       $0,267280$   &     $0,174247$  &  $0,260063$  &  $0,172984$\\
+$0,420000$ &       $0,360316$   &     $0,199749$  &  $0,360821$  &  $0,201873$\\
+$0,430000$ &       $0,495578$   &     $0,214933$  &  $0,504824$  &  $0,220384$\\
+$0,435000$ &       $0,587416$   &     $0,199017$  &  $0,592545$  &  $0,186706$\\
+$0,440000$ &       $0,624490$   &     $0,198886$  &  $0,621196$  &  $0,190946$\\
+$0,445000$ &       $0,718453$   &     $0,133490$  &  $0,703127$  &  $0,147649$\\
+$0,450000$ &       $0,765466$   &     $0,101283$  &  $0,751676$  &  $0,115272$\\
+$0,460000$ &       $0,818402$   &     $0,070646$  &  $0,817304$  &  $0,063977$\\
+$0,470000$ &       $0,855991$   &     $0,049240$  &  $0,853003$  &  $0,048010$\\
+$0,480000$ &       $0,880319$   &     $0,037618$  &  $0,878726$  &  $0,038106$\\
+$0,490000$ &       $0,899063$   &     $0,030522$  &  $0,896382$  &  $0,034484$\\
+$0,500000$ &       $0,912002$   &     $0,026942$  &  $0,912000$  &  $0,027388$\\
+$0,520000$ &       $0,933304$   &     $0,020621$  &  $0,932910$  &  $0,021438$\\
+$0,540000$ &       $0,948533$   &     $0,016265$  &  $0,948100$  &  $0,016604$\\
+$0,560000$ &       $0,959347$   &     $0,013461$  &  $0,958931$  &  $0,013762$\\
+$0,580000$ &       $0,967683$   &     $0,011340$  &  $0,967213$  &  $0,011583$\\
+$0,700000$ &       $0,990200$   &     $0,005175$  &  $0,990184$  &  $0,005217$\\
+\\
+\hline
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:mag}
+	Valori di magnetizzazione con il loro errore.
+}
+\end{table}
 
-
-
+\section{Comparazione delle prestazioni}
+Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale.
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
@@ -146,7 +185,7 @@ Effettuando un fit dei valori intorno alla temperatura critica, mettendo come pa
 
 \begin{figure}
 	\centering
-	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res2/Ising_Mag_Cv.pdf}
+	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv.pdf}
 	\caption{Dati GPU}
 	\label{figura:GPU}
 \end{figure}
