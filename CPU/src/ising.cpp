@@ -67,7 +67,10 @@ class ising_lattice {
 				}
 			}
 			boltz_ = (double*)malloc((4*DIM+1)*sizeof(double));
-			for(int i=-2*DIM; i<=2*DIM; i++) boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
+			for(int i=-2*DIM; i<=2*DIM; i++){
+				printf("%i\t%i\n",i+2*DIM,i);
+			       	boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
+			}
 			seed_a_=853892247;
 			seed_b_=491968251;
 			seed_c_=3073685529;
