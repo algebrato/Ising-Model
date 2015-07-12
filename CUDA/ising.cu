@@ -1,6 +1,8 @@
 #include<iostream>
 #include<stdlib.h>
 #include<curand_kernel.h>
+#include<curand.h>
+#include<cuda_runtime_api.h>
 #include"xorshift.cu"
 #include"fill_ran.h"
 #include"get_time.h"
@@ -13,7 +15,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
+#define L 128
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -92,12 +94,14 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int
 }
 
 
-__global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
+__global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie, curandState *  const rngStates){
 
 
 	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
 	unsigned int Xoffset = blockIdx.x*BLOCKL;
 	unsigned int Yoffset = (2*blockIdx.y+(blockIdx.x+offset)%2)*BLOCKL;
+	long int roffset = (blockIdx.x * blockDim.x + threadIdx.x)+((blockIdx.y*blockDim.y)+threadIdx.y)*L;
+	curandState localState = rngStates[roffset];
 
 	__shared__ spin_t sS[(BLOCKL+2)*(BLOCKL+2)];
 
@@ -147,19 +151,19 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
         unsigned int y2= 2*threadIdx.y+((threadIdx.x+1)%2);
 		
 		int ide = sS(x,y1)*(sS(x-1,y1)+sS(x+1,y1)+sS(x,y1+1)+sS(x,y1-1));
-		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		if(curand_uniform_double(&localState) < tex1Dfetch(boltzT, ide+2*DIM)){
 			sS(x,y1) = -sS(x,y1);
 			ie -=2*ide;
 		}
 		__syncthreads();
 		
 		ide = sS(x,y2)*(sS(x-1,y2)+sS(x+1,y2)+sS(x,y2+1)+sS(x,y2-1));
-		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		if(curand_uniform_double(&localState) < tex1Dfetch(boltzT, ide+2*DIM)){
 			sS(x,y2) = -sS(x,y2);
 			ie -= 2*ide;
 		}
 		__syncthreads();
-
+		
 		s[(Yoffset+2*threadIdx.y)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1];
 		s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1];
 		a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
@@ -177,6 +181,13 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 		__syncthreads();
 
 }
+
+__global__ void initRNG(curandState *  const rngStates, const unsigned int seed){
+	
+	unsigned long tid = (blockIdx.x * blockDim.x + threadIdx.x)+((blockIdx.y*blockDim.y)+threadIdx.y)*L;
+	curand_init(seed, (blockIdx.x * blockDim.x + threadIdx.x)+((blockIdx.y*blockDim.y)+threadIdx.y)*L, 0, &rngStates[tid]);
+}
+
 
 
 
@@ -198,12 +209,6 @@ int cpu_energy(spin_t *s){
 }
 
 
-/*__global__ void setup_kernel ( curandState * state, unsigned long seed ){
-	int id = threadIdx.x  + blockIdx.x + blockDim.x;
-	curand_init ( seed, id , id, &state[id] );
-}*/
-
-
 
 int main(int argc, char**argv){
 	spin_t *s, *sD;
@@ -212,16 +217,16 @@ int main(int argc, char**argv){
 	int *energie, *energie_d;	
 	time_t t;
 	time(&t);
-
+	
 	dim3 grid(GRIDL, GRIDL/2);
 	dim3 block(BLOCKL, BLOCKL/2);
 	dim3 gridRES(GRIDL, GRIDL);
 	dim3 blockRES(BLOCKL, BLOCKL);
 	
-	/*curandState* devStates;
-	cudaMalloc ( &devStates, TOT_TH*sizeof( curandState ) );
-	setup_kernel <<< grid, block >>> ( devStates, (unsigned long) t );*/
-
+	curandState *dev_rngState = 0;
+	cudaMalloc( (void **)&dev_rngState, TOT_TH*sizeof(curandState) );
+	int seed = 128;
+	initRNG<<<blockRES,gridRES>>>(dev_rngState, seed);
 
 	float BETA    = atof(argv[1]);
 	int   STEP_MC = atoi(argv[2]);
@@ -281,15 +286,15 @@ int main(int argc, char**argv){
 	
 	double start = getTime();
 	for(int i=0; i < 1000; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d, dev_rngState);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d, dev_rngState);
 	}
 
 
 
 	for(int i=0; i < STEP_MC; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d, dev_rngState);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d, dev_rngState);
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
