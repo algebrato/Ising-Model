@@ -15,7 +15,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 128
+#define L 4096
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -164,6 +164,9 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 		}
 		__syncthreads();
 		
+
+		
+		rngStates[roffset] = localState;
 		s[(Yoffset+2*threadIdx.y)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1];
 		s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1];
 		a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
@@ -185,7 +188,7 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 __global__ void initRNG(curandState *  const rngStates, const unsigned int seed){
 	
 	unsigned long tid = (blockIdx.x * blockDim.x + threadIdx.x)+((blockIdx.y*blockDim.y)+threadIdx.y)*L;
-	curand_init(seed, (blockIdx.x * blockDim.x + threadIdx.x)+((blockIdx.y*blockDim.y)+threadIdx.y)*L, 0, &rngStates[tid]);
+	curand_init(seed, tid, 0, &rngStates[tid]);
 }
 
 
@@ -332,8 +335,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
