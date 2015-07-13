@@ -20,4 +20,5 @@ set multiplot
 	set title "Calore Specifico"
 	plot "Ret_512.dat" u 1:3:4 with yerrorbars pt 7 ps 0.6 title "512x512", "" u 1:3 w l lc 9 title "", "../../../Relazione/Onsager_spec_heat.dat" title "Onsager" w l lt 0 lw 10
 	
+		
 unset multiplot
