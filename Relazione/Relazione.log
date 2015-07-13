@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.1.26)  30 JUN 2015 23:48
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.1.26)  1 JUL 2015 03:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -671,48 +671,48 @@ LaTeX Font Info:    Try loading font information for T1+cmtt on input line 126.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-) [6]
-<../CPU/Result/Ising_Mag_Cv.pdf, id=105, 867.24pt x 867.24pt>
+) [6] [7]
+<../CPU/Result/Ising_Mag_Cv.pdf, id=124, 867.24pt x 867.24pt>
 File: ../CPU/Result/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
 <use ../CPU/Result/Ising_Mag_Cv.pdf>
-Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 142.
+Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 181.
 
 (pdftex.def)             Requested size: 341.43306pt x 341.43787pt.
+ [8]
+<../CUDA/Result/Res3/Ising_Mag_Cv.pdf, id=130, 867.24pt x 867.24pt>
+File: ../CUDA/Result/Res3/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
-<../CUDA/Result/Res2/Ising_Mag_Cv.pdf, id=107, 867.24pt x 867.24pt>
-File: ../CUDA/Result/Res2/Ising_Mag_Cv.pdf Graphic file (type pdf)
-
-<use ../CUDA/Result/Res2/Ising_Mag_Cv.pdf>
-Package pdftex.def Info: ../CUDA/Result/Res2/Ising_Mag_Cv.pdf used on input lin
-e 149.
+<use ../CUDA/Result/Res3/Ising_Mag_Cv.pdf>
+Package pdftex.def Info: ../CUDA/Result/Res3/Ising_Mag_Cv.pdf used on input lin
+e 188.
 (pdftex.def)             Requested size: 341.43306pt x 341.43787pt.
 
-<../CPU-GPU-time.pdf, id=109, 433.62pt x 433.62pt>
+<../CPU-GPU-time.pdf, id=132, 433.62pt x 433.62pt>
 File: ../CPU-GPU-time.pdf Graphic file (type pdf)
  <use ../CPU-GPU-time.pdf>
-Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 156.
+Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 195.
 (pdftex.def)             Requested size: 341.43306pt x 341.4511pt.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 168.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 207.
 
-[7] [8 <../CPU/Result/Ising_Mag_Cv.pdf>] [9 <../CUDA/Result/Res2/Ising_Mag_Cv.p
-df>] [10 <../CPU-GPU-time.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 168.
+[9 <../CPU/Result/Ising_Mag_Cv.pdf>] [10 <../CUDA/Result/Res3/Ising_Mag_Cv.pdf>
+] [11 <../CPU-GPU-time.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 207.
  (./Relazione.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 168.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 168.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 207.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 207.
 Package rerunfilecheck Info: File `Relazione.out' has not changed.
-(rerunfilecheck)             Checksum: 3513A92C48D194E9B220A4811957C211;400.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 168.
+(rerunfilecheck)             Checksum: F46A734C2BAF5A15DA6B9624F50D55DF;544.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 207.
  ) 
 Here is how much of TeX's memory you used:
- 9003 strings out of 493485
- 127831 string characters out of 3143526
- 237026 words of memory out of 3000000
- 12134 multiletter control sequences out of 15000+200000
+ 9011 strings out of 493485
+ 127919 string characters out of 3143526
+ 240026 words of memory out of 3000000
+ 12138 multiletter control sequences out of 15000+200000
  24394 words of font info for 67 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 36i,14n,38p,1812b,356s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,14n,38p,1872b,356s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist
@@ -733,10 +733,10 @@ uper/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></
 usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/font
 s/type1/public/cm-super/sfrm1440.pfb></usr/share/texmf/fonts/type1/public/cm-su
 per/sfti1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on Relazione.pdf (10 pages, 366524 bytes).
+Output written on Relazione.pdf (11 pages, 374656 bytes).
 PDF statistics:
- 266 PDF objects out of 1000 (max. 8388607)
- 210 compressed objects within 3 object streams
- 39 named destinations out of 1000 (max. 500000)
- 82 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 282 PDF objects out of 1000 (max. 8388607)
+ 225 compressed objects within 3 object streams
+ 43 named destinations out of 1000 (max. 500000)
+ 98 words of extra memory for PDF output out of 10000 (max. 10000000)
 
