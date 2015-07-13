@@ -13,8 +13,8 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 32
-#define BLOCKL 8
+#define L 512
+#define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -242,7 +242,7 @@ int main(int argc, char**argv){
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
 
-	fill_ran_vec2(a, b, c, d, TOT_TH);
+	fill_ran_vec4(a, b, c, d, TOT_TH);
 	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
@@ -275,18 +275,21 @@ int main(int argc, char**argv){
 	double E_2=0;
 	double m=0;
 	double M=0;
+	double chi_sqr=0;
+	double chi_sqr_2=0;
+	double chi_sqr_m=0;	
 	
 	double start = getTime();
 	for(int i=0; i < 1000; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
 
 	for(int i=0; i < STEP_MC; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
@@ -296,13 +299,17 @@ int main(int argc, char**argv){
 			m+=vec_mag[bl];
 		m = m / (GRIDL*GRIDL);
 		M+=fabs(m);
-		m=0;
 		
 		cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
 		for(int bl=0; bl < BLOCKS; bl++)
 			sumE+=energie[bl];
 		E += (double)sumE;
+		chi_sqr+=pow(E/(i+1)-sumE,2.);
 		E_2 += pow((double)sumE,2.);
+		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
+		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
+		
+		m=0;	
 		sumE=ie;
 	}
 	double end = getTime();
@@ -311,11 +318,16 @@ int main(int argc, char**argv){
 	
 	E_2 /= (long double)STEP_MC;
 	E   /= (double)STEP_MC;
-	double Cal_Spec=(1/((double)N))*(E_2-E*E)*((double)BETA*(double)BETA);	
+	double Cal_Spec=(1/((double)N))*(E_2-E*E)*((double)BETA*(double)BETA);
+	double sigma_E  = pow(chi_sqr/((double)STEP_MC),0.5);
+	double sigma_E2 = pow(chi_sqr_2/((double)STEP_MC),0.5);
+	double sigma_m  = pow(chi_sqr_m/((double)STEP_MC),0.5);
+	double err_per=0.5*(sigma_E/E+sigma_E2/E_2);
+		
 
 	M/=((double)STEP_MC);
 
-	printf("%f\t%f\t%f\n", BETA, M, Cal_Spec);
+	printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
 	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;

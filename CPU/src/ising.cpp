@@ -9,7 +9,7 @@
 #include "xorshift.h"
 
 #define DIM 2
-#define TERM_STEP 100
+#define TERM_STEP 1000
 
 using namespace std;
 
@@ -67,6 +67,7 @@ class ising_lattice {
 				}
 			}
 			boltz_ = (double*)malloc((4*DIM+1)*sizeof(double));
+<<<<<<< HEAD
 			for(int i=-2*DIM; i<=2*DIM; i++){
 				printf("%i\t%i\n",i+2*DIM,i);
 			       	boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
@@ -75,6 +76,13 @@ class ising_lattice {
 			seed_b_=491968251;
 			seed_c_=3073685529;
 			seed_d_=3631446976;
+=======
+			for(int i=-2*DIM; i<=2*DIM; i++) boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
+			seed_a_=2678936131;
+			seed_b_=1801065994;
+			seed_c_=3925136598;
+			seed_d_=285088606;
+>>>>>>> 2fccf6bbe4d18fc224b6d21236e496e800416042
 			ok_=0;
 			r_t_=0;
 			E_=0;
@@ -194,9 +202,9 @@ int main(int argc, char**argv){
 	double err_per=0.5*(sigma_E/E+sigma_E2/E2);	
 	double Cal_Spec=(1/(size*size)*(beta*beta)*(E2-E*E));
 
-	//printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
+	printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
-	printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
+	//printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
 	return 0;
 
 

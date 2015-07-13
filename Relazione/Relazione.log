@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.1.26)  30 JUN 2015 08:10
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.1.26)  30 JUN 2015 23:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -577,14 +577,7 @@ subscribe by emailing sympa@lirmm.fr with 'subscribe <list> <firstname name>'
 \c@algocf=\count118
 \algocf@algoframe=\box35
 \algocf@algobox=\box36
-) (./Relazione.aux
-
-LaTeX Warning: Label `figura:ratio' multiply defined.
-
-
-LaTeX Warning: Label `figura:ratio' multiply defined.
-
-)
+) (./Relazione.aux)
 \openout1 = `Relazione.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
@@ -607,7 +600,8 @@ Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \AtBeginShipoutBox=\box37
 Package hyperref Info: Link coloring OFF on input line 29.
- (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2010/04/30 v2.40 Cross-referencing by name of section
 
 (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
@@ -662,67 +656,87 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 34.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 )
-<../CPU/Result/Ising_Mag_Cv.pdf, id=16, 867.24pt x 867.24pt>
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 37.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 37.
+ [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5]
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 126.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+) [6]
+<../CPU/Result/Ising_Mag_Cv.pdf, id=105, 867.24pt x 867.24pt>
 File: ../CPU/Result/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
 <use ../CPU/Result/Ising_Mag_Cv.pdf>
-Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 58.
+Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 142.
+
 (pdftex.def)             Requested size: 341.43306pt x 341.43787pt.
 
-<../CUDA/Result/Res2/Ising_Mag_Cv.pdf, id=18, 867.24pt x 867.24pt>
+<../CUDA/Result/Res2/Ising_Mag_Cv.pdf, id=107, 867.24pt x 867.24pt>
 File: ../CUDA/Result/Res2/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
 <use ../CUDA/Result/Res2/Ising_Mag_Cv.pdf>
 Package pdftex.def Info: ../CUDA/Result/Res2/Ising_Mag_Cv.pdf used on input lin
-e 65.
+e 149.
 (pdftex.def)             Requested size: 341.43306pt x 341.43787pt.
 
-<../CPU-GPU-time.pdf, id=20, 433.62pt x 433.62pt>
+<../CPU-GPU-time.pdf, id=109, 433.62pt x 433.62pt>
 File: ../CPU-GPU-time.pdf Graphic file (type pdf)
  <use ../CPU-GPU-time.pdf>
-Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 72.
+Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 156.
 (pdftex.def)             Requested size: 341.43306pt x 341.4511pt.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 94.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 168.
 
-[1
-
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2 <../CPU/Result/Ising_Ma
-g_Cv.pdf>] [3 <../CUDA/Result/Res2/Ising_Mag_Cv.pdf>] [4 <../CPU-GPU-time.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 94.
+[7] [8 <../CPU/Result/Ising_Mag_Cv.pdf>] [9 <../CUDA/Result/Res2/Ising_Mag_Cv.p
+df>] [10 <../CPU-GPU-time.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 168.
  (./Relazione.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 94.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 94.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 168.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 168.
 Package rerunfilecheck Info: File `Relazione.out' has not changed.
-(rerunfilecheck)             Checksum: CDBA076856A9C56744047DF4C4EF659A;195.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 94.
+(rerunfilecheck)             Checksum: 3513A92C48D194E9B220A4811957C211;400.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 168.
  ) 
 Here is how much of TeX's memory you used:
- 8896 strings out of 493485
- 126159 string characters out of 3143526
- 227026 words of memory out of 3000000
- 12074 multiletter control sequences out of 15000+200000
- 16969 words of font info for 51 fonts, out of 3000000 for 9000
+ 9003 strings out of 493485
+ 127831 string characters out of 3143526
+ 237026 words of memory out of 3000000
+ 12134 multiletter control sequences out of 15000+200000
+ 24394 words of font info for 67 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 36i,11n,38p,258b,335s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,14n,38p,1812b,356s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1728.pfb></usr/
-share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></usr/share/texmf/fonts/ty
-pe1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/
-sfrm1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1200.pfb>
-Output written on Relazione.pdf (4 pages, 218722 bytes).
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/s
+hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/t
+exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf/fo
+nts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-
+super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1728.pfb><
+/usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></usr/share/texmf/fon
+ts/type1/public/cm-super/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-s
+uper/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></
+usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/font
+s/type1/public/cm-super/sfrm1440.pfb></usr/share/texmf/fonts/type1/public/cm-su
+per/sfti1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1200.pfb>
+Output written on Relazione.pdf (10 pages, 366524 bytes).
 PDF statistics:
- 150 PDF objects out of 1000 (max. 8388607)
- 112 compressed objects within 2 object streams
- 13 named destinations out of 1000 (max. 500000)
- 58 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 266 PDF objects out of 1000 (max. 8388607)
+ 210 compressed objects within 3 object streams
+ 39 named destinations out of 1000 (max. 500000)
+ 82 words of extra memory for PDF output out of 10000 (max. 10000000)
 
