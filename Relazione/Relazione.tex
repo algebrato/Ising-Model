@@ -129,10 +129,34 @@ l'equazione $(\ref{xor:sh})$ risulta molto semplice \texttt{x\;=\;x\;\^\;(x<<a)}
 	\label{tr:xor}
 } 
 dove $\mathbf{R}$ è la matrice di \textit{spostamento a destra} ed è definita come $\mathbf{R} = \mathbf{L}^T$. I parametri $a,\, b,\, c,\, d$ sono le posizioni di shift rispettivamente a sinistra, destra, sinistra e ancora a destra. \`E stato dimostrato che per valori opportuni dei parametri $a,\, b,\, c,\, d$\footnote{Marsaglia nel suo articolo consiglia $a=20$, $b=11$, $c=27$, $d=6$} si hanno sequenze di numeri pseudo-random con periodo di $2^w-1$. In questo caso $w=128$ quindi la catena di numeri è molto lunga ed è adeguata per essere utilizzata in simulazioni lunghe. La generazione in parallelo di numeri pseudo-random, avviene tramite l'allocazione in memoria di quattro vettori contenenti i seed iniziali. La scelta del seed ha un ruolo fondamentale tutto questo. Ad ogni nodi di calcolo (nel nostro caso delle GPU quindi ad ogni threads) deve esserci associato il suo quartetto di seed iniziali in modo tale che le varie sottocatene associate ai vari threads non si sovrappongono. Se ciò si verificasse, si perderebbe moltissima statistica perchè le catene associate ad ogni threads sarebbero praticamente tutte molto simili, si introdurrebbe quindi un forte accoppiamento dovuto alla totale (o anche pariziale) pedita della della statisticità. Per evitare questo, la catena totale di numeri PR viene spezzata in punti ben precisi, in particolar modo vengono presi valori di $a,\, b,\, c,\, d$ ongi 10000 generazioni (numero di step Monte Carlo della simulazione) e vengono assegnati ad ogni threads. In questo modo ogni thread genera catene distanti 10000 numeri, esattamente il numero di step Monte Carlo, escludendo ogni tipo di sovrapposizione tra le catene.
+Nel caso di simulazioni di repliche, in cui è necessario svolgere contemporaneamente più simulazioni indipendenti, non è assolutamente necessario ricostruire da zero la mappa dei seed in quanto, una volta srotolata, si hanno a disposizione $(2^{128}-1)/10000 \sim 10^{34}nodi$ che sono tantissimi! Una simulazione per un reticolo $1024\times1024$ richiede $10^4$ seed. 
+
+
+
+
 \section{Consistenza del modello Fisico}
 Nelle Figure [\ref{figura:CPU}] e [\ref{figura:GPU}] sono raffigurati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin, sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
 \newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
-Effettuando un fit dei valori intorno alla temperatura critica, mettendo come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. Nelle immagini \ref{figura:CPU} e \ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti.
+Effettuando un fit dei valori intorno alla temperatura critica, mettendo come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. Nelle immagini \ref{figura:CPU} e \ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti come in Tab. \ref{tab:espcr}
+
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{c|c|c}
+		\hline
+		\hline
+		$\alpha_{vero}$ & $\alpha_{CPU}$ & $\alpha_{GPU}$     \\
+		\hline
+		$0,110\pm0,001$ & $0,114\pm0,004$ & $0.113\pm0.003$ \\
+		\hline
+		\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{tab:espcr} Valori di esponente critico  }
+\end{table}
+
+
+
 \section{Discussione sulla diversità dei risultati}
 In Tabella \ref{tab:mag} sono riportati i valori di magnetizzazione per un reticolo $32\times32$, con relativo errore, in funzione di $\beta$. Come detto in precedenza, si è riusciti a portare completamente, operazione per operazione, l'algoritmo usato su CPU alle schede grafiche, quindi ci si aspettava che dopo lo stesso numero di passi di termalizzazione e di step Monte Carlo, il dato sia proprio identicamente lo stesso. Come si può notare in tabella i dati, seppur compatibili tra loro all'interno del proprio errore, non sono identicamente lo stesso dato. La spiegazione consiste nel modo in cui vengono estratti i numeri pseudocasuali. Nel caso dell CPU, in modo seriale, l'evoluzione di uno spin  è contraddistinto da un certo numero PR della catena e così via in modo ordinato su tutta l'estensione del reticolo, per tutti gli step Monte Carlo usati. Nel caso della GPU, la catena di numeri pseudo random viene suddivisa in sottocatene. Il numero pseudorandom che caratterizava l'evoluzione dello spin nominato precedentemente, sulla GPU può caratterizzare un altro spin. \`E  quindi corretto ritrovarsi con valori differenti, ma molto vicini tra loro e compatibilissimi all'interno del loro errore statistico. In conclusione i dati ci stanno dicendo è che nonostante ci sia un rimescolamento dei numeri casuali, la statistica del sistema rimane sempre la stessa, quindi i due dati sono perfettamente compatibili.   
 
@@ -197,7 +221,19 @@ Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due var
 	\label{figura:time}
 \end{figure}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Comp_Onsager.pdf}
+	\caption{Onsager-Reticolo $512 \times 512$}
+	\label{figura:comp}
+\end{figure}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv_curand.pdf}
+	\caption{Onsager-Reticolo $512 \times 512$}
+	\label{figura:curand}
+\end{figure}
 
 
 
