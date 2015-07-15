@@ -199,7 +199,7 @@ $0,700000$ &       $0,990200$   &     $0,005175$  &  $0,990184$  &  $0,005217$\\
 \end{table}
 
 \section{Comparazione delle prestazioni}
-Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale.
+Il codice è stato implementato in CPP per singola CPU, ed in cuda C con tre varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared, la terza implementazione è stata fatta coambiando implementazione del generatore di numeri random.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale. L'utilizzo delle librerie CURAND per la generazione dei numeri random ha mostrato come l'implementazione è molto più lenta del generatore proposto in questo lavoro. 
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
@@ -231,7 +231,7 @@ Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due var
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv_curand.pdf}
-	\caption{Onsager-Reticolo $512 \times 512$}
+	\caption{Confronto XORSHIFT-CURAND per diversi size del reticolo}
 	\label{figura:curand}
 \end{figure}
 
