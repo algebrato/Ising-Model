@@ -14,7 +14,7 @@ using namespace std;
 #define H_D cudaMemcpyHostToDevice
 #define D_H cudaMemcpyDeviceToHost
 
-#define L 1024
+#define L 4096
 #define BLOCKL 16
 
 
@@ -55,20 +55,14 @@ int main(){
 	cudaMalloc((void**)&sub_arr_d, (L/BLOCKL)*sizeof(float));
 	cudaMemcpy(arr_num_d, arr_num, L*sizeof(float), H_D);
 
-
-	//Mancano un po' di controlli sull'indice
-
-	for(int i=1; i<4; ++i){
-		get_max<<< grid/(i*16) , block >>>(sub_arr_d,arr_num_d);
-		get_max<<< grid/((i+1)*16) , block >>>(arr_num_d,sub_arr_d);
-	}
-
-
-
-
+	get_max<<< L/BLOCKL , block >>>(arr_num_d,sub_arr_d);
+	get_max<<< L/(BLOCKL*16) , block >>>(sub_arr_d,arr_num_d);
+	get_max<<< L/(BLOCKL*256) , block >>>(arr_num_d,sub_arr_d);
+	
+	
 	cudaMemcpy(sub_arr, sub_arr_d, (L/BLOCKL)*sizeof(float), D_H);
 
-	for(int i=0; i<L/BLOCKL; ++i)
+	for(int i=0; i<L/(BLOCKL*256); ++i)
 		cout << sub_arr[i] << endl;
 
 	return 0;
