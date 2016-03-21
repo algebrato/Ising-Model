@@ -62,8 +62,7 @@ int main(){
 	
 	cudaMemcpy(sub_arr, sub_arr_d, (L/BLOCKL)*sizeof(float), D_H);
 
-	for(int i=0; i<L/(BLOCKL*256); ++i)
-		cout << sub_arr[i] << endl;
+	cout << "Massimo array = " << sub_arr[i] << endl;
 
 	return 0;
 }
