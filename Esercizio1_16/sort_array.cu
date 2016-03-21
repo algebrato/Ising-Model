@@ -18,17 +18,27 @@ using namespace std;
 #define BLOCKL 16
 
 
-__global__ void get_max(float *arr_num, float *sub_arr){
+__global__ void get_max(float *arr_num, float ABSMAX){
 	__shared__ float sub[BLOCKL];
+	__shared__ float subsub[L/BLOCKL];
 	sub[threadIdx.x] = arr_num[BLOCKL*blockIdx.x+threadIdx.x];
 	__shared__ float max;
+	ABSMAX=0;
+
 	max = sub[0];
 	for(int i=1; i<BLOCKL; ++i){
 		if(max < sub[i]){
 			max = sub[i];
 		}
 	}
-	sub_arr[blockIdx.x]=max;
+	subsub[blockIdx.x]=max;
+	__syncthreads();
+	
+	for(int k=0; k<L/BLOCKL; ++k){
+		if(&ABSMAX < subsub[k]){
+			&ABSMAX = subsub[k];
+		}
+	}
 }
 
 
@@ -36,12 +46,11 @@ __global__ void get_max(float *arr_num, float *sub_arr){
 
 
 int main(){
-	float *arr_num, *arr_num_d, *sub_arr_d, *sub_arr;
+	float *arr_num, *arr_num_d, *ABSMAX_d, *ABSMAX;
 	
 	//Dichiaro la mia array sulla CPU
-	sub_arr=(float*)malloc((L/BLOCKL)*sizeof(float));
 	arr_num=(float*)malloc(L*sizeof(float));
-	
+	ABSMAX=(float*)malloc(sizeof(float));	
 	//Riempio l'array con numeri random tra 0 e 10
 	for(int i=0; i<L; ++i){
 		arr_num[i]=10*(rand()/float(RAND_MAX));
@@ -54,18 +63,16 @@ int main(){
 
 	//Copio l'array sulla scheda grafica
 	cudaMalloc((void**)&arr_num_d, L*sizeof(float));
-	cudaMalloc((void**)&sub_arr_d, (L/BLOCKL)*sizeof(float));
+	cudaMalloc((void**)&ABSMAX_d, sizeof(float));
 	cudaMemcpy(arr_num_d, arr_num, L*sizeof(float), H_D);
 
-	get_max<<< grid , block >>>(arr_num_d,sub_arr_d);
+	get_max<<< grid , block >>>(arr_num_d,ABSMAX_d);
 
 
 
-	cudaMemcpy(sub_arr, sub_arr_d, (L/BLOCKL)*sizeof(float), D_H);
+	cudaMemcpy(ABSMAX, ABSMAX_d, sizeof(float), D_H);
 
-	cout << "Result" << endl;
-	for(int i = 0 ; i<(L/BLOCKL);i++)
-		cout << sub_arr[i] << endl;
+	cout << "Max = " << ABSMAX << endl;
 
 
 	return 0;
