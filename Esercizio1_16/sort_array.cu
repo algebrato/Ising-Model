@@ -14,7 +14,7 @@ using namespace std;
 #define H_D cudaMemcpyHostToDevice
 #define D_H cudaMemcpyDeviceToHost
 
-#define L 32
+#define L 1024
 #define BLOCKL 16
 
 
@@ -34,11 +34,8 @@ __global__ void get_max(float *arr_num, float *sub_arr){
 }
 
 
-
-
-
 int main(){
-	float *arr_num, *arr_num_d, *sub_arr, *sub_arr;
+	float *arr_num, *arr_num_d, *sub_arr_d, *sub_arr;
 	
 	//Dichiaro la mia array sulla CPU
 	arr_num=(float*)malloc(L*sizeof(float));
@@ -58,20 +55,22 @@ int main(){
 	cudaMalloc((void**)&sub_arr_d, (L/BLOCKL)*sizeof(float));
 	cudaMemcpy(arr_num_d, arr_num, L*sizeof(float), H_D);
 
-	get_max<<< grid , block >>>(arr_num_d,sub_arr_d);
+
+	//Mancano un po' di controlli sull'indice
+
+	for(int i=1; i<4; ++i){
+		get_max<<< grid/(i*16) , block >>>(sub_arr_d,arr_num_d);
+		get_max<<< grid/((i+1)*16) , block >>>(arr_num_d,sub_arr_d);
+	}
 
 
 
-	cudaMemcpy(ABSMAX, ABSMAX_d, sizeof(float), D_H);
 
-	cout << "Max = " << ABSMAX << endl;
+	cudaMemcpy(sub_arr, sub_arr_d, (L/BLOCKL)*sizeof(float), D_H);
 
+	for(int i=0; i<L/BLOCKL; ++i)
+		cout << sub_arr[i] << endl;
 
 	return 0;
 }
-
-
-
-
-
 
