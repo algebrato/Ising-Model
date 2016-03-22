@@ -1,6 +1,6 @@
 NVCC		:= nvcc -G
 ESEGUIBILE	:= find_max 
-OBJ		:= find.max.o
+OBJ		:= find_max.o
 ARCH 		:= -arch=sm_20
 
 %.o : %.cu
