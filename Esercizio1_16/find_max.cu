@@ -28,17 +28,29 @@ using namespace std;
 
 
 __global__ void get_max(float *arr_num, float *sub_arr){
+	//Alloco nella memoria shared uno spazio dedicato 
+	//ai sottovettori di dimensione 16 (dimensione del warp di una GTX480)
 	__shared__ float sub[BLOCKL];
+
+	//Riempio i vettori nella memoria shared
 	sub[threadIdx.x] = arr_num[BLOCKL*blockIdx.x+threadIdx.x];
+	
+	//ad ogni blocco di memoria shared e` associato il relativo massimo
 	__shared__ float max;
 
+	//calcolo il massimo (in modo sequenziale) per ogni blocco
 	max = sub[0];
 	for(int i=1; i<BLOCKL; ++i){
 		if(max < sub[i]){
 			max = sub[i];
 		}
 	}
+	//riempio il vettore dei MASSIMI. Ogni elemento di questo vettore contiene il massimo dei 16
+	//elementi del vettore stanziato inizialmente. Rispetto al vettore iniziale
+	//sara` piu` corto di un fattore 16.
 	sub_arr[blockIdx.x]=max;
+
+	//aspetto che tutti i threads dei vari blocchi abbiano finito
 	__syncthreads();
 }
 

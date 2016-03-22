@@ -1,4 +1,4 @@
-(** Ruffini **)
+(** ::Ruffini:: **)
 
 RUF[x_, y_, t_] := Module[
 		  {coefx, coefy, MUL, n1, rest},
@@ -8,13 +8,17 @@ RUF[x_, y_, t_] := Module[
    
    For[
 		   i = 2, i <= Length[coefx], i++,
-   coefx[[i]] = coefx[[i]] + (coefx[[i - 1]]*n1)
+           coefx[[i]] = coefx[[i]] + (coefx[[i - 1]]*n1)
    ];
    
    rest = Last[coefx];
    coefx=Delete[coefx,Length[coefx]];
 
-   Print[coefx,rest]
+   Print["Q(x)=",coefx];
+   Print["R(x)=",rest];
   ]
 
-RUF[x^4 + 7 x + 6, x - 1, x]
+RUF[x^4 + 7 x + 6, x + 1, x]
+
+
+
