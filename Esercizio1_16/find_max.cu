@@ -2,9 +2,9 @@
   in tanti piccoli vettori di dimensione 16. Trovare il massimo di ognuno
   di questi e scriverlo in un sottovettore che e` sub_array.
   Ogni volta che viene ripetuto il kernel la lunghezza di sub_array, rispetto
-  ad array e` 16 volte inferiore.
+  ad array e` 16*BLOCKL volte inferiore.
   Se si parte da un vettore iniziale di 4096 elementi non e` necessario nemmeno
-  usare la CPU. Iterando 3 volte il kernel, torna una matrice di dimensione 1 
+  usare la CPU. Iterando 3 volte il kernel, torna un vettore di dimensione 1 
   che rappresenta appunto il massimo del vettore iniziale
  */
 #include<iostream>
@@ -47,7 +47,7 @@ __global__ void get_max(float *arr_num, float *sub_arr){
 	}
 	//riempio il vettore dei MASSIMI. Ogni elemento di questo vettore contiene il massimo dei 16
 	//elementi del vettore stanziato inizialmente. Rispetto al vettore iniziale
-	//sara` piu` corto di un fattore 16.
+	//sara` piu` corto di un fattore 16*BLOCKL
 	sub_arr[blockIdx.x]=max;
 
 	//aspetto che tutti i threads dei vari blocchi abbiano finito
@@ -78,9 +78,9 @@ int main(){
 
 	//Eseguo 3 volte il kernel invertendo arr_num e sub_arr in questo modo
 	//ad ogni step la dimensione dell'array dei massimi dei sottovettori
-	//allocati nella memoria shared, diminuisce di un fattore 16
-	//4096 e` una potenza perfetta di 16, quindi dopo 3 passaggi
-	//ritorneta` una matrice dei massimi di dimensione 1, che rappresentera`
+	//allocati nella memoria shared, diminuisce di un fattore 16*BLOCKL.
+	//4096 e` una potenza di 16, quindi dopo 3 passaggi
+	//ritorneta` un vettore dei massimi di dimensione 1, che rappresentera`
 	//proprio il massimo del vettore iniziale.
 	get_max<<< L/BLOCKL , BLOCKL >>>(arr_num_d,sub_arr_d);
 	get_max<<< L/(BLOCKL*16) , BLOCKL >>>(sub_arr_d,arr_num_d);
