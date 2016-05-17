@@ -206,6 +206,7 @@ int cpu_energy(spin_t *s){
 
 
 int main(int argc, char**argv){
+	cudaSetDevice(1);
 	spin_t *s, *sD;
 	UI *a, *a_d, *b, *b_d, *c, *c_d, *d, *d_d;
 	float *vec_mag, *vec_mag_d;
