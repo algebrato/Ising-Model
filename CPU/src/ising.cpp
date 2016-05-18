@@ -43,12 +43,13 @@ class ising_lattice {
 		unsigned int seed_c_;
 		unsigned int seed_d_;
 		int ok_;
-		double *corr_len_;
+		double corr_len_;
+		double corr_len_R;
+		double corr_len_2R;
 	public:
 		ising_lattice(int N, string init, double BETA=0.44) : size_(N), J_(1), beta_(BETA) {
 			s_ = (int*)malloc(N*N*sizeof(int));
 			sf_ = (int*)malloc(N*N*sizeof(int));
-			corr_len_ = (double*)malloc((N*N*sizeof(int)));
 			if(init == "rnd"){
 				for(int i=0; i<N*N; ++i){
 					if(rand()/((double)RAND_MAX) < 0.5){
@@ -70,10 +71,12 @@ class ising_lattice {
 			}
 			boltz_ = (double*)malloc((4*DIM+1)*sizeof(double));
 			for(int i=-2*DIM; i<=2*DIM; i++) boltz_[i+2*DIM] = min(1.0,exp(-2*beta_*J_*i));
+		
 			seed_a_=2678936131;
 			seed_b_=1801065994;
 			seed_c_=3925136598;
 			seed_d_=285088606;
+
 			ok_=0;
 			r_t_=0;
 			E_=0;
@@ -94,7 +97,8 @@ class ising_lattice {
 				for(int x=0; x<size_; ++x){
 					int ide = s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
 					//double r = rand()/(double)RAND_MAX;
-					double r = MTGPU(&seed_a_,&seed_b_,&seed_c_,&seed_d_);
+					double r = drand48();
+					//double r = MTGPU(&seed_a_,&seed_b_,&seed_c_,&seed_d_);
 					if(ide <= 0 || r < boltz_[ide+2*DIM]){
 						s_[size_*y+x] = -s_[size_*y+x];
 						++ok_;
@@ -109,16 +113,24 @@ class ising_lattice {
 		}//END do_update
 
 		void do_corr_len(){
-				M_=0;
-				for(int i=0; i< size_*size_; ++i)
-						M_ += s_[i];
-				if(M_<0) M_*=-1;
-				M_/=((double)size_*size_);
 				
-				for(int y=0; y<size_; ++y)
-						for(int x=0; x<size_; ++x)
-								corr_len_[y*size_+x]=s_[(y*size_+x)]*s_[0]-(M_*M_);
+			M_=0;
+			corr_len_R=0;
+			corr_len_2R=0;
+			
+			for(int i=0; i< size_*size_; ++i)
+						M_ += s_[i];
+			M_/=((double)size_*size_);
 
+			for(int y=0; y<size_; ++y)
+					for(int x=0; x<size_; ++x)
+							corr_len_R += s_[(y*size_+x)]*s_[0];
+
+			for(int y=0; y<size_/2; ++y)
+					for(int x=0; x<size_; ++x)
+							corr_len_2R += s_[(2*y*size_+x)]*s_[0];
+				
+			corr_len_ = (corr_len_R/((double)size_*size_) ) / (corr_len_2R/((double)size_*size_));
 		}//END do_corr_len
 
 
@@ -133,11 +145,13 @@ class ising_lattice {
 		
 		
 		double get_magnetization_p_s(){
+			if(M_<0) 
+				M_*=-1;
 			return M_;
 		}//END get mag
 
 		double get_corr_len(){
-				return *corr_len_;
+				return corr_len_;
 		}//END get corr len
 
 		void get_lattice(){
@@ -168,9 +182,9 @@ int main(int argc, char**argv){
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
 	
-	double start = getTime();
-	for(int i=0; i < TERM_STEP; ++i)
-		s.do_update();
+	//double start = getTime();
+	//for(int i=0; i < TERM_STEP; ++i)
+	//	s.do_update();
 	
 	double M=0;
 	double E=0;
@@ -184,7 +198,7 @@ int main(int argc, char**argv){
 	double beta = atof(argv[3]);
 	double size = (double)atoi(argv[1]);
 
-	corr_len=(double*)malloc(N*N*sizeof(double));
+
 
 	for(int i=0; i<atoi(argv[4]); i++){
 		s.do_update();
@@ -198,6 +212,7 @@ int main(int argc, char**argv){
 		chi_sqr+=pow(E/(i+1)-e,2.);
 		chi_sqr_2+=pow(E2/(i+1)-e2,2.);
 		chi_sqr_m+=pow(M/(i+1)-m,2.);
+		printf("corr= %f \t m = %f \n",s.get_corr_len(),m);
 	}
 	double end = getTime();
 	E/=(double)atoi(argv[4]);
