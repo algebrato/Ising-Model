@@ -43,10 +43,12 @@ class ising_lattice {
 		unsigned int seed_c_;
 		unsigned int seed_d_;
 		int ok_;
+		double *corr_len_;
 	public:
 		ising_lattice(int N, string init, double BETA=0.44) : size_(N), J_(1), beta_(BETA) {
 			s_ = (int*)malloc(N*N*sizeof(int));
 			sf_ = (int*)malloc(N*N*sizeof(int));
+			corr_len_ = (double*)malloc((N*N*sizeof(int)));
 			if(init == "rnd"){
 				for(int i=0; i<N*N; ++i){
 					if(rand()/((double)RAND_MAX) < 0.5){
@@ -106,6 +108,19 @@ class ising_lattice {
 			de_=0;
 		}//END do_update
 
+		void do_corr_len(){
+				M_=0;
+				for(int i=0; i< size_*size_; ++i)
+						M_ += s_[i];
+				if(M_<0) M_*=-1;
+				M_/=((double)size_*size_);
+				
+				for(int y=0; y<size_; ++y)
+						for(int x=0; x<size_; ++x)
+								corr_len_[y*size_+x]=s_[(y*size_+x)]*s_[0]-(M_*M_);
+
+		}//END do_corr_len
+
 
 		int get_ok_MC(){
 			return ok_;
@@ -117,15 +132,13 @@ class ising_lattice {
 		}//END get energy;
 		
 		
-		
 		double get_magnetization_p_s(){
-			M_=0;
-			for(int i=0; i< size_*size_; ++i)
-				M_ += s_[i];
-			if(M_<0) M_*=-1;
-			return M_/(size_*size_);
+			return M_;
 		}//END get mag
 
+		double get_corr_len(){
+				return *corr_len_;
+		}//END get corr len
 
 		void get_lattice(){
 			for(int i=0; i< size_; ++i){
@@ -170,8 +183,12 @@ int main(int argc, char**argv){
 	double chi_sqr_m=0;
 	double beta = atof(argv[3]);
 	double size = (double)atoi(argv[1]);
+
+	corr_len=(double*)malloc(N*N*sizeof(double));
+
 	for(int i=0; i<atoi(argv[4]); i++){
 		s.do_update();
+		s.do_corr_len();
 		m=s.get_magnetization_p_s();
 		e=s.get_energy();
 		e2=pow(e,2);
