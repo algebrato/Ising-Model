@@ -92,19 +92,24 @@ class ising_lattice {
 
 	
 		void do_update(){
+			int y,x;
 			r_t_=0;
-			for(int y=0; y<size_; ++y){
-				for(int x=0; x<size_; ++x){
+			for(int a=0; a<size_; ++a){
+				for(int b=0; b<size_; ++b){
+					x=rand() % size_;
+					y=rand() % size_;
+					
 					int ide = s_[size_*y+x]*(s_[size_*y+((x==0)?size_-1:x-1)]+s_[size_*y+((x==size_-1)?0:x+1)]+s_[size_*((y==0)?size_-1:y-1)+x]+s_[size_*((y==size_-1)?0:y+1)+x]);
 					//double r = rand()/(double)RAND_MAX;
-					double r = drand48();
-					//double r = MTGPU(&seed_a_,&seed_b_,&seed_c_,&seed_d_);
+					//double r = drand48();
+					double r = MTGPU(&seed_a_,&seed_b_,&seed_c_,&seed_d_);
 					if(ide <= 0 || r < boltz_[ide+2*DIM]){
 						s_[size_*y+x] = -s_[size_*y+x];
 						++ok_;
 						++r_t_;
 						de_ -= 2*ide;
 					}
+					printf("%i\t%i\t%f\n",x,y,r);
 				}
 			}
 			E_+=de_;
@@ -212,7 +217,7 @@ int main(int argc, char**argv){
 		chi_sqr+=pow(E/(i+1)-e,2.);
 		chi_sqr_2+=pow(E2/(i+1)-e2,2.);
 		chi_sqr_m+=pow(M/(i+1)-m,2.);
-		printf("corr= %f \t m = %f \n",s.get_corr_len(),m);
+		//printf("corr= %f \t m = %f \n",s.get_corr_len(),m);
 	}
 	double end = getTime();
 	E/=(double)atoi(argv[4]);
@@ -223,7 +228,7 @@ int main(int argc, char**argv){
 	double err_per=0.5*(sigma_E/E+sigma_E2/E2);	
 	double Cal_Spec=(1/(size*size)*(beta*beta)*(E2-E*E));
 
-	printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
+	//printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
 	//printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
 	return 0;
