@@ -1,6 +1,6 @@
 #!/usr/bin/gnuplot
 
-set terminal pdf fontscale 0.7 size 12,12 enhanced
+set terminal pdf fontscale 0.7 size 12,6 enhanced
 set output "Ising_Mag_Cv.pdf"
 set multiplot
 	set origin 0,0
