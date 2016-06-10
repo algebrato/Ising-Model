@@ -282,15 +282,15 @@ int main(int argc, char**argv){
 	
 	double start = getTime();
 	for(int i=0; i < 1000; ++i){
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
 
 	for(int i=0; i < STEP_MC; ++i){
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
