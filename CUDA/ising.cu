@@ -13,7 +13,7 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
+#define L 4096
 #define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
@@ -49,7 +49,10 @@ __global__ void get_magnetization(spin_t *s_, float *vec_mag){
 __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
 	int tidx = threadIdx.x + blockDim.x*blockIdx.x;
 	int tidmy= threadIdx.y + blockDim.y*blockIdx.y;
-	int tidy = 2*tidmy+((tidx+offset)%2);
+	int tidy = 2*tidmy+(tidx+offset)%2;
+	printf("%i\n",tidy);
+
+
 	int ide = s_[L*tidy+tidx]*(s_[L*tidy+((tidx==0)?L-1:tidx-1)]+s_[L*tidy+((tidx==L-1)?0:tidx+1)]+s_[L*((tidy==0)?L-1:tidy-1)+tidx]+s_[L*((tidy==L-1)?0:tidy+1)+tidx]);
 
 	//Inizializzo i semi
@@ -328,8 +331,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	//printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
