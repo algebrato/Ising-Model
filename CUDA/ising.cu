@@ -94,6 +94,23 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int
 	__syncthreads();
 }
 
+__global__ void do_update_testB(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
+	//Qui ci vanno un po' di variabili per inizializzare MTGPU
+	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
+	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	//Fine*************
+
+	MTGPU(aa, bb, cc, dd);
+
+	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
+	b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
+	c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
+	d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
+
+}
 
 __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
 
@@ -283,38 +300,37 @@ int main(int argc, char**argv){
 	double chi_sqr_2=0;
 	double chi_sqr_m=0;	
 	
-	double start = getTime();
 	for(int i=0; i < 1000; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
-
+	double start = getTime();
 	for(int i=0; i < STEP_MC; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		cudaThreadSynchronize();
 		
-		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
-		cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
+		//get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
+		//cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
 		
-		for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
-			m+=vec_mag[bl];
-		m = m / (GRIDL*GRIDL);
-		M+=fabs(m);
+		//for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
+		//	m+=vec_mag[bl];
+		//m = m / (GRIDL*GRIDL);
+		//M+=fabs(m);
 		
-		cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
-		for(int bl=0; bl < BLOCKS; bl++)
-			sumE+=energie[bl];
-		E += (double)sumE;
-		chi_sqr+=pow(E/(i+1)-sumE,2.);
-		E_2 += pow((double)sumE,2.);
-		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
-		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
+		//cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
+		//for(int bl=0; bl < BLOCKS; bl++)
+		//	sumE+=energie[bl];
+		//E += (double)sumE;
+		//chi_sqr+=pow(E/(i+1)-sumE,2.);
+		//E_2 += pow((double)sumE,2.);
+		//chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
+		//chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
 		
-		m=0;	
-		sumE=ie;
+		//m=0;	
+		//sumE=ie;
 	}
 	double end = getTime();
 	//cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);
