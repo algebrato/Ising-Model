@@ -94,21 +94,15 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int
 	__syncthreads();
 }
 
-__global__ void do_update_testB(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
+__global__ void do_update_testB(spin_t *s, UI *a, UI offset, int *energie){
 	//Qui ci vanno un po' di variabili per inizializzare MTGPU
 	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
 	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
 	//Fine*************
 
-	MTGPU(aa, bb, cc, dd);
+	LCG32(aa);
 
 	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
-	b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
-	c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
-	d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 
 }
 
@@ -126,7 +120,7 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 	sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1] = s[(Yoffset+2*threadIdx.y+1)*L+(Xoffset+threadIdx.x)];
 	
 	//bordo in alto
-	if(threadIdx.y == 0)
+	/*if(threadIdx.y == 0)
 		sS[threadIdx.x+1] = (Yoffset == 0) ? s[(L-1)*L+Xoffset+threadIdx.x] : s[(Yoffset-1)*L+Xoffset+threadIdx.x];
 	if(threadIdx.y == (BLOCKL/2)-1)
 		sS[(BLOCKL+1)*(BLOCKL+2)+(threadIdx.x+1)] = (Yoffset == L-BLOCKL) ? s[Xoffset+threadIdx.x] : s[(Yoffset+BLOCKL)*L+Xoffset+threadIdx.x];
@@ -153,7 +147,7 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 			sS[(2*threadIdx.y+2)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+BLOCKL];
 		}
 	}
-	__syncthreads();
+	__syncthreads();*/
 
 	//Qui ci vanno un po' di variabili per inizializzare MTGPU
 	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
@@ -301,15 +295,20 @@ int main(int argc, char**argv){
 	double chi_sqr_m=0;	
 	
 	for(int i=0; i < 1000; ++i){
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, 1, energie_d);
 	}
 
 
 	double start = getTime();
 	for(int i=0; i < STEP_MC; ++i){
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, 1, energie_d);
+			
 		cudaThreadSynchronize();
 		
 		//get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);

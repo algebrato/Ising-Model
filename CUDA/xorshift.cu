@@ -23,5 +23,14 @@ __device__ __host__ float MTGPU(unsigned int *s1, unsigned int *s2, unsigned int
 	return w / END_SCALE;
 }
 
-	
+__device__ __host__ float LCG32(unsigned int *s1){
+		unsigned int x,t;
+		
+		x=*s1;
+		t=x^x<<11;
+		*s1 = x;
+		
+		return t / END_SCALE;
+}
+
 
