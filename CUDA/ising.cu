@@ -94,16 +94,22 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int
 	__syncthreads();
 }
 
-__global__ void do_update_testB(spin_t *s, UI *a, UI offset, int *energie){
+__global__ void do_update_testB(spin_t *s, UI *a, UI *b, UI *c, UI *d,  UI offset, int *energie){
 	//Qui ci vanno un po' di variabili per inizializzare MTGPU
 	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
+	
 	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+    unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
 	//Fine*************
 
-	LCG32(aa);
+	MTGPU(aa, bb, cc, dd);
 
 	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
-
+    b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
+    c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
+    d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 }
 
 __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
@@ -297,8 +303,8 @@ int main(int argc, char**argv){
 	for(int i=0; i < 1000; ++i){
 		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
@@ -306,8 +312,8 @@ int main(int argc, char**argv){
 	for(int i=0; i < STEP_MC; ++i){
 		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, 1, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 			
 		cudaThreadSynchronize();
 		
