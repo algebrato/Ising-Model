@@ -109,7 +109,7 @@ class ising_lattice {
 						++r_t_;
 						de_ -= 2*ide;
 					}
-					printf("%i\t%i\t%f\n",x,y,r);
+					//printf("%i\t%i\t%f\n",x,y,r);
 				}
 			}
 			E_+=de_;
@@ -187,9 +187,9 @@ int main(int argc, char**argv){
 	
 	ising_lattice s(atoi(argv[1]),argv[2],atof(argv[3]));
 	
-	//double start = getTime();
-	//for(int i=0; i < TERM_STEP; ++i)
-	//	s.do_update();
+	double start = getTime();
+	for(int i=0; i < TERM_STEP; ++i)
+		s.do_update();
 	
 	double M=0;
 	double E=0;
@@ -228,9 +228,9 @@ int main(int argc, char**argv){
 	double err_per=0.5*(sigma_E/E+sigma_E2/E2);	
 	double Cal_Spec=(1/(size*size)*(beta*beta)*(E2-E*E));
 
-	//printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
+	printf("%f\t%f\t%f\t%f\t%f\n",atof(argv[3]), M/=(double)atoi(argv[4]), Cal_Spec, err_per*Cal_Spec , sigma_m ); //rifare la parte di errore, è sbagliata.
 	//printf("Flip %i / %i\n",s.get_ok_MC(),(TERM_STEP+atoi(argv[4]))*atoi(argv[1])*atoi(argv[1]));
-	//printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
+	printf("%f\t%f\n", size, (end-start)/((double)(size*size)*(TERM_STEP+atoi(argv[4]))));
 	return 0;
 
 

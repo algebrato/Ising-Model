@@ -6,6 +6,7 @@ NAME		= Ising Model - Stefano Mandelli
 ## Switch #######################################
 DEVICE		:=true
 DEBUGMODE	:= true
+#INTEL		:= true
 #################################################
 
 
@@ -15,7 +16,11 @@ ifdef DEVICE
 NVCC		:= nvcc -G
 ESEGUIBILE	:= ising_CPU.x
 OBJ		:= ising.o xorshift.o
+ifdef INTEL
+CC		:= icc
+else
 CC		:= g++
+endif
 
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
