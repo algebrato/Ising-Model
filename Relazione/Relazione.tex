@@ -109,7 +109,7 @@ Si notano in modo evidenti gli effetti di \emph{size scaling} per reticoli molto
 		\label{figura:CPU}
 \end{figure}
 \subsection*{Comparazione tra diversi PNRG su CPU}
-In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del genratore pi\`u performante e quello meno performante c'\`e circa un fattore quattro. 
+In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del genratore pi\`u performante e quello meno performante c'\`e circa un fattore tre. 
 \begin{figure}
 \centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Term_step.pdf}
@@ -130,41 +130,45 @@ Una seconda fase consiste nel riportare, operazione per operazione, il generator
 \end{figure}
 Il reticolo di Ising è stato posizionato sulla griglia della GPU utilizzando la \emph{memoria shared} per ottenere migliori performance. La memoria shared è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, debba essere prima posizionato nella memoria shared e successivamente vanno insierite le condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera. Il primo livello di scacchiera, a blocchi grandi (relativi ai blocchi della shared memory), il secondo livello di scacchiera, a blocchi piccoli nel senso che l'update dei siti viene svolto a scacchiera anche tra i threads all'interno dello stesso blocco. Tutti i threads dello stesso blocco condividono la stessa area di memoria shared. In Fig.~\ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
 
-Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore 
+Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore Specifico} 
+
+\subsection*{Confronto performance dei vari PNRG}
+Insieme al numero di step necessari a far termalizzare il sistema \`e necessario indagare anche le performance temporali di ogni singolo PNRG per verificare se l'effettivo guadagno in numero di step \`e un effettivo guadagno in termini di tempi di simulazione. Un generatore caratterizzato da una miglior statistica e randomicit\`a dei dati pu\`o far termalizzare prima il sistema ma va comunque valutato il costo temporale necessario a generarli.
+\begin{figure}
+	\centering
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_PNRG.pdf}
+		\caption{Confronto del tempo di generazione di un numero pseudorandom per due differenti PNRG}
+		\label{time:per:random}
+\end{figure}
+Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a 31bit impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
+\subsection*{Ottimizzazione della dimensione del blocco}
+\begin{figure}
+	\centering
+		\includegraphics[widt:=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
+		\caption{}
+		\label{time:block:size}
+\end{figure}
 
 
-\subsection{Implementazione del PRNG}
-Una classe di generatori efficienti è stata proposta da Marsaglia ed è quella dei generatori \textbf{xorshift}. Consistono nel scegliere in modo opportuno, un vettore di semi iniziali in cui le componenti sono bits. Se si sceglie un vettore $x$ di lunghezza $w$, è possibile dimostrare che si ottiene un ottimo e molto veloce generatore di numeri pseudo-random effettuando su questo vettore operazioni di shift. Definiamo la matrice $\mathbf{L}$
-\newl{
-	\mathbf{L}=\left(\begin{matrix}
-	0 & 0 & \cdots & 0 \\
-	1 & 0 & \cdots & 0 \\
-	\vdots & \ddots & \ddots & \vdots\\
-	0 & \cdots & 1 & 0
-	\end{matrix}\right)
-}
-come matrice di \textit{spostamento a sinistra} che trasforma il vettore $x=(x_1,\cdots,x_w)$ in $x=(x_2,\cdots,x_w,0)$. L'operazione totale di XORShift proposta da Marsaglia è però di or esclusivo quindi per effettuare uno xorshift di $a$ posizioni si ha che
-\newl{
-		x_{n+1} = x_{n}(\text{Id}\oplus \mathbf{L}^a ).
-	\label{xor:sh}
-}
-Con il simbolo $\oplus$ si intende la somma con mod $2$ su ogni singolo elemento. Un vettore del tipo $x_{n}=(1,1,0,1)$ viene trasformato con uno xorshift sinistro di $a=1$ nel vettore $x_{n+1}$ diventando
-\newl{
-		x_{n+1} = x_{n}(\text{Id}\oplus \mathbf{L}^1) = (1,1,0,1)\left(\begin{matrix}
-			        1 & 0 & 0 & 0 \\
-			        1 & 1 & 0 & 0 \\
-			        0 & 1 & 1 & 0\\
-			        0 & 0 & 1 & 1
-				\end{matrix}\right) = (0,1,1,1).
-}
-Questa operazione, per quanto riguarda il linguaggio di programmazione C, può essere semplicemente svolta tramite due operazioni di bitwise. Dal punto di vista del codice, 
-l'equazione $(\ref{xor:sh})$ risulta molto semplice \texttt{x\;=\;x\;\^\;(x<<a)}. In letteratura viene consigliato di usare quattro step di shift. L'algoritmo implementato è quindi 
-\newl{
-		x_{n+1} = x_n(\text{Id}\oplus \mathbf{L}^a) (\text{Id}\oplus \mathbf{R}^b) (\text{Id}\oplus \mathbf{L}^c) (\text{Id}\oplus \mathbf{R}^d) 
-	\label{tr:xor}
-} 
-dove $\mathbf{R}$ è la matrice di \textit{spostamento a destra} ed è definita come $\mathbf{R} = \mathbf{L}^T$. I parametri $a,\, b,\, c,\, d$ sono le posizioni di shift rispettivamente a sinistra, destra, sinistra e ancora a destra. \`E stato dimostrato che per valori opportuni dei parametri $a,\, b,\, c,\, d$\footnote{Marsaglia nel suo articolo consiglia $a=20$, $b=11$, $c=27$, $d=6$} si hanno sequenze di numeri pseudo-random con periodo di $2^w-1$. In questo caso $w=128$ quindi la catena di numeri è molto lunga ed è adeguata per essere utilizzata in simulazioni lunghe. La generazione in parallelo di numeri pseudo-random, avviene tramite l'allocazione in memoria di quattro vettori contenenti i seed iniziali. La scelta del seed ha un ruolo fondamentale tutto questo. Ad ogni nodi di calcolo (nel nostro caso delle GPU quindi ad ogni threads) deve esserci associato il suo quartetto di seed iniziali in modo tale che le varie sottocatene associate ai vari threads non si sovrappongono. Se ciò si verificasse, si perderebbe moltissima statistica perchè le catene associate ad ogni threads sarebbero praticamente tutte molto simili, si introdurrebbe quindi un forte accoppiamento dovuto alla totale (o anche pariziale) pedita della della statisticità. Per evitare questo, la catena totale di numeri PR viene spezzata in punti ben precisi, in particolar modo vengono presi valori di $a,\, b,\, c,\, d$ ongi 10000 generazioni (numero di step Monte Carlo della simulazione) e vengono assegnati ad ogni threads. In questo modo ogni thread genera catene distanti 10000 numeri, esattamente il numero di step Monte Carlo, escludendo ogni tipo di sovrapposizione tra le catene.
-\section{Consistenza del modello Fisico}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	\section{Consistenza del modello Fisico}
 Nelle Figure [\ref{figura:CPU}] e [\ref{figura:GPU}] sono raffigurati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin, sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
 \newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
 Effettuando un fit dei valori intorno alla temperatura critica, mettendo come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. Nelle immagini \ref{figura:CPU} e \ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti.
