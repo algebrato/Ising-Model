@@ -1,7 +1,8 @@
 #!/usr/bin/gnuplot
 
-set terminal pdf fontscale 0.7 size 12,6 enhanced
+set terminal pdf fontscale 0.9 size 12,6 enhanced
 set output "Ising_Mag_Cv.pdf"
+set xlabel "{/Symbol b}"
 set multiplot
 	#set origin 0,0
 	#set size 0.5,1
@@ -18,6 +19,7 @@ set multiplot
 	
 	set origin 0,0
 	set size 0.5,1
+	set key left
 	set ylabel "Magnetizzazione per Spin"
 	set title "Magnetizzazione - CPU"
 	set yrange [0:1]
@@ -26,6 +28,7 @@ set multiplot
 
 	set origin 0.5,0
 	set size 0.5,1
+	set key left
 	set autoscale
 	set yrange [0:3]
 	set xrange [0:0.7]

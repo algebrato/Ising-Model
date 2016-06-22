@@ -27,7 +27,8 @@
 \renewcommand{\floatpagefraction}{.9}
 
 \begin{document}
-\author{Stefano Mandelli}
+\author{Stefano Mandelli\\
+Matricola: 861838}
 \title{\bf \Huge Confronto delle prestazioni CPU-GPU per la simulazione di un reticolo di Ising-2D}
 \date{}
 \maketitle
@@ -37,7 +38,7 @@ Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il 
 	\item Breve introduzione sul modello usato;
 	\item Implementazione del codice;
 	\item Consistenza fisica del modello;
-	\item Discussione suulla diversità dei risultati;
+	\item Discussione sulla diversità dei risultati;
 	\item Comparazione delle prestazioni per diverse implementazioni;
 \end{itemize}
 
@@ -87,15 +88,49 @@ Per il modello di Ising le acceptance ratio appena descritte hanno la particolar
 
 
 \section{Implementazione del codice}
-L'implementazione del codice passa attraverso due grandi fasi. La prima fase consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone è quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocità di lettura/scrittura e minimizzazione di banck conflict. La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocità di lettura e scrittura dipende dal tipo di memoria usata mente il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo,  vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
+La strategia di implementazione che \`e stata adottata in questo lavoro consiste in una prima implementazione su CPU e la successiva implementazione su scheda grafica. L'obiettivo \`e quello di riottenere gli stessi risultati e gli stessi grafici. 
 
-Una seconda fase consiste nel riportare, operazione per operazione, il generatore di numeri pseudorandom usato nel caso per CPU in parallelo su GPU. Questo tipo di passaggio non è banale in quanto la generazione di numeri pseudorandom è per definizione seriale. La generazione del numero $n+1$ dipende dal numero $n$. Dato che l'evoluzione del nostro modello è di tipo Metropolis e i numeri random sono quindi una necessità assoluta, per non perdere paralelizzazione del codice, è necessario elaborare una strategia di generazione dei numeri pseudorandom parallela e performante per le GPU.
+Un primo confronto viene fatto con i grafici di \emph{Magnetizzazione} e \emph{Calore Specifico} in funzione di $\beta$, con la soluzione esatta di Onsager. Questo confronto \`e per verificare la compatibilit\`a della simulazione con il modello fisico. Successivamente sono stati confrontati gli stessi risultati ottenuti su GPU e CPU. 
 
-\subsection{Implementazione del modello}
-Il reticolo di Ising è stato posizionato sulla griglia  della GPU in due modi differenti. La prima volta usando solo la memoria globale, la seconda volta usando anche quella shared per comparare eventuali migliorie nella performance. Come da equazioni [\ref{DIF:EN:SPIN}] e [\ref{DET:FIN}] l'evoluzione di uno spin dipende solo dai suoi 4 primi vicini. Questo fa sì che la miglior strategia di parallelizzazione sia quella di effettuare gli update del reticolo a scacchiera. Aggiornando prima gli spin "pari" e successivamente quelli "dispari" si vanno ad aggiornare elementi totalmente indipendenti del sistema.
+Il secondo risultato che viene presentato riguarda le caratteristiche (punti favorevoli e punti sfavorevoli) di diversi PRNG, nel particolare \`e stato confrontato il numero di step di termalizzazione in funzione alla complessit\`a numerica della generazione. 
 
-Un secondo livello di gestione del reticolo, è quello di utiilizzare la memoria shared, nota per essere molto veloce in lettura e scrittura. La memoria shared però è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, debba essere prima posizionato nella memoria shared, successivamente vanno insierite le condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera, a blocchi grandi (relativi ai blocchi della shared memory) e a blocchi piccoli nel senso dell'update a scacchiera anche dei threads all'interno dello stesso blocco che condividono la stessa area di memoria shared. In Figura \ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
+Il terzo risultato che viene presentato riguarda la ricerca di un BLOCKL di dimensione tale da portare a saturazione ogni singolo WARP.
 
+Le conclusioni finali sull'ottimizzazione del programma terranno conto di tutte le conclusioni presentate precedentemente.
+
+\subsection{Implementazione su CPU}
+In Fig.~\ref{figura:CPU} sono presentati i risultati di Magnetizzazione e Calore specifico, per diversi size in funzione di $\beta$, comparati con la soluzione analitica al limite termodinamico di Onsager.
+
+Si notano in modo evidenti gli effetti di \emph{size scaling} per reticoli molto piccoli. Al crescere della taglia del reticolo, i risultati della simulazione si avvicinano sempre di pi\`u al modello al limite termodinamico.
+\begin{figure}
+	\centering
+		\includegraphics[width=150mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
+		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su CPU}
+		\label{figura:CPU}
+\end{figure}
+\subsection*{Comparazione tra diversi PNRG su CPU}
+In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del genratore pi\`u performante e quello meno performante c'\`e circa un fattore quattro. 
+\begin{figure}
+\centering
+	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Term_step.pdf}
+	\caption{\emph{Passi Montecarlo} necessari per raggiungere la termalizzazione in funzione a tre diversi PNRG.}
+	\label{figura:randomCPU}
+\end{figure}
+\subsection{Implementazione su GPU}
+L'implementazione del codice passa attraverso due grandi fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone è quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocità di lettura/scrittura e minimizzazione di banck conflict. La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocità di lettura e scrittura dipende dal tipo di memoria usata mente il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo,  vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
+
+Una seconda fase consiste nel riportare, operazione per operazione, il generatore di numeri pseudorandom usato nel caso per CPU, in parallelo su GPU. Questo tipo di passaggio non è banale in quanto la generazione di numeri pseudorandom è per definizione seriale. La generazione del numero $n+1$ dipende dal numero $n$. Dato che l'evoluzione del nostro modello è di tipo \emph{Metropolis} e i numeri random sono quindi una necessit\`a principle, per non perdere paralelizzazione del codice è necessario elaborare una strategia di estrazione parallela e performante per le GPU.
+
+\subsection*{Implementazione del modello}
+\begin{figure}
+	\centering
+		\includegraphics[width=150mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv.pdf}
+		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su GPU}
+		\label{figura:GPU}
+\end{figure}
+Il reticolo di Ising è stato posizionato sulla griglia della GPU utilizzando la \emph{memoria shared} per ottenere migliori performance. La memoria shared è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, debba essere prima posizionato nella memoria shared e successivamente vanno insierite le condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera. Il primo livello di scacchiera, a blocchi grandi (relativi ai blocchi della shared memory), il secondo livello di scacchiera, a blocchi piccoli nel senso che l'update dei siti viene svolto a scacchiera anche tra i threads all'interno dello stesso blocco. Tutti i threads dello stesso blocco condividono la stessa area di memoria shared. In Fig.~\ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
+
+Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore 
 
 
 \subsection{Implementazione del PRNG}
@@ -176,20 +211,6 @@ $0,700000$ &       $0,990200$   &     $0,005175$  &  $0,990184$  &  $0,005217$\\
 
 \section{Comparazione delle prestazioni}
 Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale.
-\begin{figure}
-	\centering
-	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
-	\caption{Dati CPU}
-	\label{figura:CPU}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv.pdf}
-	\caption{Dati GPU}
-	\label{figura:GPU}
-\end{figure}
-
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CPU-GPU-time.pdf}
