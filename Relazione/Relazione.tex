@@ -142,12 +142,14 @@ Insieme al numero di step necessari a far termalizzare il sistema \`e necessario
 \end{figure}
 Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a 31bit impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
 \subsection*{Ottimizzazione della dimensione del blocco}
+Un ulteriore passo da fare nella ricerca della performance migliore, \`e quello di cercare il miglior numero di \emph{threads} da assegnare ad ogni singolo \emph{blocco} in modo da saturarne l'utilizzo.
 \begin{figure}
 	\centering
-		\includegraphics[widt:=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
-		\caption{}
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
+		\caption{Ottimizzazione della dimensione del blocco}
 		\label{time:block:size}
 \end{figure}
+
 
 
 

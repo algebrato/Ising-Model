@@ -1,6 +1,6 @@
 #!/usr/bin/gnuplot
 
-set terminal pdf fontscale 0.7 size 7,7 enhanced
+set terminal pdf fontscale 1 size 12,7 enhanced
 set output "Term_step.pdf"
 set multiplot
 	set origin 0,0
