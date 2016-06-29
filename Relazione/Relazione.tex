@@ -33,7 +33,9 @@ Matricola: 861838}
 \date{}
 \maketitle
 \section*{Introduzione}
-Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il modello di Ising 2D. \`E un modello analitico, nel senso che al limite termodinaco esiste una soluzione analitica esatta. E' stato possibile riportare il codice, operazione per operazione (compresa la generazione dei numeri pseudorandom) da singola CPU alla fine parallelizzazione delle GPU, in questo modo sarà possibile valutare lo speed-up di prestazioni in modo quantitativo perfettamente consistente. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata meno consistente in quanto si sarebbero andati a comparare risultati ottenuti con implementazioni diverse. I punti che verranno trattati in questo lavoro sono i seguenti:
+Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il modello di Ising 2D. \`E un modello analitico, nel senso che al limite termodinaco esiste una soluzione analitica esatta. 
+
+\`E stato possibile riportare il codice, operazione per operazione, compresa la generazione dei numeri pseudorandom, da singola CPU alla fine parallelizzazione delle GPU in questo modo sarà possibile valutare lo speed-up di prestazioni in modo quantitativo perfettamente consistente. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata correlata anche al tipo di implementazione del \emph{Generatore di Numeri Pseudorandom (PNRG)}. I punti che verranno trattati in questo lavoro sono i seguenti:
 \begin{itemize}
 	\item Breve introduzione sul modello usato;
 	\item Implementazione del codice;
@@ -43,29 +45,43 @@ Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il 
 \end{itemize}
 
 \section{Scelta del modello}
-Il modello di Ising-2D è un modello che si presta molto bene ad essere parallelizzato, in quanto è un tipico modello interagente a corto range. In questo modo è possibile pensare ad una strategia di parallelizzazione efficace. Brevemente, il modello di Ising è caratterizzato da un reticolo (ad esempio ipercubico) in $D$ dimensioni. Ad ogni cella del reticolo viene associato uno spin si che può essere solo del tipo $s_i=\lbrace +1, -1 \rbrace$ a seconda che la direzione del dipolo magnetico (o spira), associato alla cella $i-esima$ del reticolo risulti verso l'alto o verso il basso. Il sistema è descritto dall’Hamiltoniana di Ising
-\newl{\mathcal{H}=-J\sum_{\langle i,j\rangle}s_is_j -h\sum_{i}s_i}
-dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è fatta su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e campo magnetico esterno nullo, quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una transizione di fase in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema si comporta in modo paramagnetico. Per temperature inferiori invece si ha un fenomeno di magnetizzazione spontanea. Le principali grandezze fisiche che possono essere calcolate sono la magnetizzazione media del sistema $\langle M\rangle$  e la capacità termica a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantità estensive sono divergenti nel limite termodinamico. Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = D \times D$ spins che si desidera confrontare per diversi size. È utile pertanto confrontare la densità di calore specifico $c_V = CV /N$ e di magnetizzazione che è la variabile coniugata al campo esterno $h$
-\newl{m=\frac{1}{N}\langle\sum_is_i\rangle}
-Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato nel seguente modo: per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione è molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$, in questo modo $\langle M \rangle$ risulta nulla. Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il modello di Ising 2D, presenta una transizione di fase netta. Il sistema passa, in modo spontaneo, da una situazione di ordine in cui gli spin sono orientati prevalentemente nella stessa direzione quindi hanno in maggioranza valore $+1$ oppure $-1$. I due casi, per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins, per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $\langle M \rangle = 0$. Per modelli finiti sufficientemente grandi è ugualmente possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ . Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising, con molti spin a valore $+1$ sarà favorito. In questo modo, per temperature inferiori a quella critica, si hanno dei valori di magnetizzazione non nulli e dello stesso segno ed è quindi possibile valutare l’entità della magnetizzazione spontanea.
+Il modello di Ising-2D è un modello che si presta molto bene ad essere parallelizzato, in quanto è un tipico modello interagente a corto range. Per questo tipo di interazioni \`e facile trovare strategie di parallelizzazione molto efficaci.
+
+Il modello di Ising è caratterizzato da un reticolo (ad esempio ipercubico) in $D$ dimensioni. Ad ogni cella del reticolo viene associato uno spin che può essere solo del tipo $s_i=\lbrace +1, -1 \rbrace$ a seconda che la direzione del dipolo magnetico, associato alla cella $i-esima$ del reticolo, risulti verso l'alto o verso il basso. 
+
+Il sistema è descritto dall’Hamiltoniana di Ising
+\newl{\mathcal{H}=-J\sum_{\langle i,j\rangle}s_is_j -h\sum_{i}s_i,}
+dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è fatta su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. 
+
+In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e a campo magnetico esterno nullo, quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una transizione di fase in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema si comporta in modo paramagnetico. Per temperature inferiori invece si ha un fenomeno di magnetizzazione spontanea. 
+
+Le principali grandezze fisiche che possono essere calcolate sono la magnetizzazione media del sistema $\langle M\rangle$  e la capacità termica a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantità estensive divergono al limite termodinamico. Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = L \times L$ spins che si desidera confrontare per diversi size. \`E utile pertanto confrontare la densità di calore specifico $c_V = CV /N$ e di magnetizzazione che è la variabile coniugata al campo esterno $h$
+\newl{m=\frac{1}{N}\left\langle\sum_is_i\right\rangle}
+Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato nel seguente modo: per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione è molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$, in questo modo $\langle M \rangle$ risulta nulla. 
+
+Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il modello di Ising 2D, presenta una transizione di fase netta. Il sistema passa, in modo spontaneo, da una situazione di ordine in cui gli spin sono orientati prevalentemente nella stessa direzione quindi hanno in maggioranza valore $+1$ oppure $-1$. I due casi, per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins, per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $\langle M \rangle = 0$. 
+
+Per modelli finiti sufficientemente grandi è ugualmente possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ . Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising, con molti spin a valore $+1$ sarà favorito. In questo modo, per temperature inferiori a quella critica, si hanno dei valori di magnetizzazione non nulli e dello stesso segno ed è quindi possibile valutare l’entità della magnetizzazione spontanea.
+
 \subsection{Algoritmo di Metropolis}
-Dato che le fluttuazioni di energia, rispetto all'energia totale del sistema, sono piccole, un modo sufficientemente efficiente di generare delle mosse Monte Carlo, è quello definito dalla \textit{dinamica a singolo spin-flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso inizialmente in modo casuale. Lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. In questo modo è possibile definire la probabilità di selezione come
+Dato che le fluttuazioni di energia, rispetto all'energia totale del sistema, sono piccole, un modo sufficientemente efficiente di generare delle mosse Monte Carlo, è quello definito dalla \emph{dinamica a singolo spin-flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
+
+Risulta evidente che nei passi di evoluzione, secondo un algoritmo di tipo Metropolis, il primo passo \`e quello di definire la probabilit\`a con cui scegliere lo spin a cui apportare la modifica. Come detto precedentemente, essendo una dinamica a \emph{singolo spin flip} si ha che 
 \newl{g(\mu\to\nu)=\frac{1}{N}\,.}
-Con questa probabilità di selezione, la condizione del detailed balance prende la forma
-\newl{\frac{P(\mu\to\nu)}{P(\nu\to\mu)} = \frac{g(\mu\to\nu)A(\mu\to\nu)}{g(\nu\to\mu)A(\nu\to\mu)} = \frac{p_\nu}{p_\mu} = e^{-\beta (E_\nu-E_\mu)}\,. \label{DET:FIN} }
-Dato che $g(\mu\to\nu)=g(\nu\to\mu)$ si sceglie l'acceptance ratio in modo tale che soddisfi l'equazione $(\ref{DET:FIN})$
+Con la probabilità di selezione definita in questo modo la condizione del \emph{bilancio dettagliato} prende la forma
+\newl{\frac{P(\mu\to\nu)}{P(\nu\to\mu)} = \frac{g(\mu\to\nu)A(\mu\to\nu)}{g(\nu\to\mu)A(\nu\to\mu)} = \frac{p_\nu}{p_\mu} = e^{-\beta (E_\nu-E_\mu)}\, \label{DET:FIN} }
+e dato che $g(\mu\to\nu)=g(\nu\to\mu)$ si sceglie l'acceptance ratio in modo tale che soddisfi l'equazione $(\ref{DET:FIN})$
 \newl{\frac{A(\mu\to\nu)}{A(\nu\to\mu)} = e^{-\beta (E_\nu - E_\mu)},}
 da cui è possibile dedurre che
 \newl{A(\mu\to\nu) = A_0 e^{-\frac{1}{2}\beta(E_\nu-E_\mu)}\label{acc-rat-azer}\,.}
-Per avere un algoritmo che sia il più efficiente possibile l'acceptance ratio deve essere significativamente diversa da zero. Il parametro $A_0$ è scelto in funzione ad alcune considerazioni
-su come è fatta l'Hamiltoniana di Ising. E' facile osservare che la differenza di energia tra due stati, in modulo, è al massimo pari a $|\Delta E|=2zJ$ dove $z$ è il numero di primi vicini, che nel
-caso di reticolo 2D vale $z=4$, quindi per il reticolo 2D abbiamo che al massimo $|\Delta E|= 8J$. La differenza di energia tra lo stato $\mu$ e $\nu$ è
+
+Per avere un algoritmo che sia il più efficiente possibile il \emph{rateo di accettazione} deve essere significativamente diverso da zero. Il parametro $A_0$ è scelto in funzione ad alcune considerazioni relative alla struttura dell'Hamiltoniana di Ising. \`E facile osservare che la differenza di energia tra due stati, in modulo, \`e al massimo pari a $|\Delta E|=2zJ$ dove $z$ è il numero di primi vicini. Nel caso di reticolo $2D$ vale $z=4$, quindi per il reticolo 2D abbiamo che al massimo $|\Delta E|= 8J$. La differenza di energia tra lo stato $\mu$ e $\nu$ è
 \newl{|E_\nu-E_\mu| \leq 2zJ.}
-In questo modo, il massimo possibile valore dell'esponenziale vale
+In questo modo, il massimo valore possibile dell'esponenziale \`e
 \newl{e^{-\frac{1}{2}\beta (E_\nu-E_\mu)} \leq e^{\beta zJ}}
 che permette di stabilire la scelta migliore possibile del coefficiente
 \newl{A_0 = e^{-\beta zJ}\,.}
-La scrittura finale per l'acceptance ratio risulta quindi:
+La scrittura finale per il \emph{rateo di accettazione} risulta quindi essere
 \newl{A(\mu\to\nu)= e^{-\frac{1}{2} \beta(E_\nu-E_\mu + 2zJ) },\label{acc:ratio}}
 in modo da avere $A(\mu\to\nu) \leq 1$.
 Si può verificare che l' $A(\mu\to\nu)$ scritta ora è molto inefficiente. Il sistema rimane per troppo tempo nello stesso stato. Una scelta migliore che rispetta tutte le condizioni di quella precedente è data proprio dall'acceptance ratio proposta da Metropolis
@@ -78,7 +94,9 @@ A(\mu\to\nu)=\left\{
         \end{aligned}
         \right.
 \end{equation}
-Per il modello di Ising le acceptance ratio appena descritte hanno la particolarità che possono essere calcolate mediante la sola conoscenza degli spins primi vicini allo spin di cui si propone il suo flip, questo perchè l'interazione nel modello di Ising  è a corto raggio. Nel caso dell'Hamiltoniana di Ising, questa differenza è possibile scriverla in modo molto semplice, in funzione solo dagli spin primi vicini dello spin di cui si propone il flip:
+Per il modello di Ising i \emph{ratei di accettazione} appena descritti hanno la particolarit\`a che possono essere calcolati mediante la sola conoscenza degli spins primi vicini allo spin di cui si propone il suo flip, questo perchè l'interazione nel modello di Ising  è a corto raggio. 
+
+Nel caso dell'Hamiltoniana di Ising, questa differenza è possibile scriverla in modo molto semplice, in funzione solo dagli spin primi vicini dello spin di cui si propone il flip
 \newl{
 	E_\nu - E_\mu &=& -J\sum_{\langle i,j \rangle}s_i^\nu s_j^\nu + J\sum_{\langle i,j \rangle}s_i^\mu s_j^\mu = \nonumber\\
 	&=& -J\sum_{i\neq k}s_i^\nu(s_k^\nu-s_k^\mu) = -2Js_k^\mu\sum_{i\neq k} s_i^\mu\,.
@@ -117,9 +135,13 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 	\label{figura:randomCPU}
 \end{figure}
 \subsection{Implementazione su GPU}
-L'implementazione del codice passa attraverso due grandi fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone è quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocità di lettura/scrittura e minimizzazione di banck conflict. La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocità di lettura e scrittura dipende dal tipo di memoria usata mente il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo,  vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
+L'implementazione del codice su GPU passa attraverso due fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone \`e quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocit\`a di lettura/scrittura e minimizzazione di banck conflict. 
 
-Una seconda fase consiste nel riportare, operazione per operazione, il generatore di numeri pseudorandom usato nel caso per CPU, in parallelo su GPU. Questo tipo di passaggio non è banale in quanto la generazione di numeri pseudorandom è per definizione seriale. La generazione del numero $n+1$ dipende dal numero $n$. Dato che l'evoluzione del nostro modello è di tipo \emph{Metropolis} e i numeri random sono quindi una necessit\`a principle, per non perdere paralelizzazione del codice è necessario elaborare una strategia di estrazione parallela e performante per le GPU.
+La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocit\`a di lettura e scrittura dipende dal tipo di memoria usata mentre il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo, vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
+
+Una seconda fase consiste nel riportare, operazione per operazione, il codice per il PNRG usato nel caso per CPU, in parallelo su GPU. Questo tipo di passaggio non è immediato in quanto la generazione di numeri pseudorandom è per definizione seriale. 
+
+La generazione del numero $n+1$ dipende dal numero $n$. Dato che l'evoluzione del nostro modello è di tipo \emph{Metropolis} e i numeri random sono quindi una necessit\`a principle, per non perdere paralelizzazione del codice è necessario elaborare una strategia di estrazione parallela e performante per le GPU.
 
 \subsection*{Implementazione del modello}
 \begin{figure}
@@ -128,9 +150,11 @@ Una seconda fase consiste nel riportare, operazione per operazione, il generator
 		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su GPU}
 		\label{figura:GPU}
 \end{figure}
-Il reticolo di Ising è stato posizionato sulla griglia della GPU utilizzando la \emph{memoria shared} per ottenere migliori performance. La memoria shared è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, debba essere prima posizionato nella memoria shared e successivamente vanno insierite le condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera. Il primo livello di scacchiera, a blocchi grandi (relativi ai blocchi della shared memory), il secondo livello di scacchiera, a blocchi piccoli nel senso che l'update dei siti viene svolto a scacchiera anche tra i threads all'interno dello stesso blocco. Tutti i threads dello stesso blocco condividono la stessa area di memoria shared. In Fig.~\ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
+Il reticolo di Ising è stato posizionato sulla griglia della GPU utilizzando la \emph{memoria shared} per ottenere migliori performance. La \emph{memoria shared} è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, una volta caricato in \emph{memoria shared} necessita che vengano specificate le relative condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera. 
 
-Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore Specifico} 
+Il primo livello di scacchiera, a blocchi grandi relativi ai blocchi della \emph{memoria shared}; il secondo livello di scacchiera, a blocchi piccoli nel senso che l'update dei siti viene svolto a scacchiera anche tra i threads all'interno dello stesso blocco. Tutti i threads dello stesso blocco condividono la stessa area di memoria shared. In Fig.~\ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
+
+Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.~\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore Specifico} a confronto con la soluzione analitica di Onsager al limite termodinamico. 
 
 \subsection*{Confronto performance dei vari PNRG}
 Insieme al numero di step necessari a far termalizzare il sistema \`e necessario indagare anche le performance temporali di ogni singolo PNRG per verificare se l'effettivo guadagno in numero di step \`e un effettivo guadagno in termini di tempi di simulazione. Un generatore caratterizzato da una miglior statistica e randomicit\`a dei dati pu\`o far termalizzare prima il sistema ma va comunque valutato il costo temporale necessario a generarli.
@@ -140,11 +164,12 @@ Insieme al numero di step necessari a far termalizzare il sistema \`e necessario
 		\caption{Confronto del tempo di generazione di un numero pseudorandom per due differenti PNRG}
 		\label{time:per:random}
 \end{figure}
+
 Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a 31bit impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
 \subsection*{Ottimizzazione della dimensione del blocco}
 \begin{figure}
 	\centering
-		\includegraphics[widt:=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
 		\caption{}
 		\label{time:block:size}
 \end{figure}
