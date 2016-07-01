@@ -23,13 +23,11 @@ void fill_ran_vec (unsigned int *a, unsigned int *b, unsigned int *c, unsigned i
 
 
 void fill_ran_vec2 (unsigned int *a, unsigned int *b, unsigned int *c, unsigned int *d, int N){
+	srand(time(NULL));
 	for(int i=0; i<N; ++i){
 		a[i]=rand();
-		srand(time(NULL));
 		b[i]=rand();
-		srand(time(NULL));
 		c[i]=rand();
-		srand(time(NULL));
 		d[i]=rand();
 	}
 

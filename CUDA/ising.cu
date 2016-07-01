@@ -101,6 +101,7 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 		
 		int ide = sS(x,y1)*(sS(x-1,y1)+sS(x+1,y1)+sS(x,y1+1)+sS(x,y1-1));
 		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		//if(LCG32(aa) < tex1Dfetch(boltzT, ide+2*DIM)){
 			sS(x,y1) = -sS(x,y1);
 			ie -=2*ide;
 		}
@@ -108,6 +109,7 @@ __global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offse
 		
 		ide = sS(x,y2)*(sS(x-1,y2)+sS(x+1,y2)+sS(x,y2+1)+sS(x,y2-1));
 		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		//if(LCG32(aa) < tex1Dfetch(boltzT, ide+2*DIM)){
 			sS(x,y2) = -sS(x,y2);
 			ie -= 2*ide;
 		}
@@ -271,7 +273,7 @@ int main(int argc, char**argv){
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
 
-	fill_ran_vec4(a, b, c, d, TOT_TH);
+	fill_ran_vec2(a, b, c, d, TOT_TH);
 	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
@@ -285,7 +287,14 @@ int main(int argc, char**argv){
 	
 
 	s = (spin_t*)malloc(N*sizeof(spin_t));
-	for(int i=0; i<N; i++) s[i]=1;
+	for(int i=0; i<N; i++){
+	//		if(rand()/((double)RAND_MAX) < 0.5){
+	//				s[i]=-1;
+	//		}else{
+					s[i]=1;
+	//		}
+	}
+
 	cudaMalloc((void**)&sD, N*sizeof(spin_t));
 	cudaMemcpy(sD, s, N*sizeof(spin_t), H_D);
 
@@ -308,15 +317,16 @@ int main(int argc, char**argv){
 	double chi_sqr_2=0;
 	double chi_sqr_m=0;	
 	
-	for(int i=0; i < 1000; ++i){
+	/*for(int i=0; i < 1000; ++i){
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
-
+*/
 
 	double start = getTime();
+	printf("0\t1\n");
 	for(int i=0; i < STEP_MC; ++i){
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
@@ -341,7 +351,8 @@ int main(int argc, char**argv){
 		E_2 += pow((double)sumE,2.);
 		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
 		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
-		
+		printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
+
 		m=0;	
 		sumE=ie;
 	}
@@ -360,8 +371,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	//printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
