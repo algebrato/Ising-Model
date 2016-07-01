@@ -13,8 +13,8 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 512
-#define BLOCKL 36
+#define L 128
+#define BLOCKL 8
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -32,18 +32,115 @@ __global__ void get_magnetization(spin_t *s_, float *vec_mag){
 	__shared__ spin_t sS[(BLOCKL)*(BLOCKL+1)];
 	__shared__ float sum_part;
 
-	sS[threadIdx.x + BLOCKL*threadIdx.y] = s_[(blockIdx.x*BLOCKL + threadIdx.x )+(blockIdx.y*BLOCKL*L + threadIdx.y*L)];
+	sS[threadIdx.x + blockDim.x*threadIdx.y] = s_[(blockIdx.x*blockDim.x + threadIdx.x )+(blockIdx.y*blockDim.y*L + threadIdx.y*L)];
 	__syncthreads();
 	if(threadIdx.x == 0)
 		if(threadIdx.y == 0){
 			sum_part=0;
-			for(int i=0; i<BLOCKL; i++)
-				for(int k=0; k<BLOCKL; k++)
-					sum_part += sS[i*BLOCKL+k];
+			for(int i=0; i<blockDim.x; i++)
+					for(int k=0; k<blockDim.y; k++)
+							sum_part += sS[i*blockDim.x+k];
 			__syncthreads();
-			vec_mag[blockIdx.x+blockIdx.y*GRIDL] = sum_part / (BLOCKL*BLOCKL);
+			vec_mag[blockIdx.x+blockIdx.y*gridDim.x] = sum_part / (blockDim.x*blockDim.y);
 		}
 }
+
+__global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
+
+
+	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
+	unsigned int Xoffset = blockIdx.x*BLOCKL;
+	unsigned int Yoffset = (2*blockIdx.y+(blockIdx.x+offset)%2)*BLOCKL;
+
+	__shared__ spin_t sS[(BLOCKL+2)*(BLOCKL+2)];
+
+	//se non sono sui bordi completo con la doppia scacchiera
+	sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1] = s[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)];
+	sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1] = s[(Yoffset+2*threadIdx.y+1)*L+(Xoffset+threadIdx.x)];
+	
+	//bordo in alto
+	if(threadIdx.y == 0)
+		sS[threadIdx.x+1] = (Yoffset == 0) ? s[(L-1)*L+Xoffset+threadIdx.x] : s[(Yoffset-1)*L+Xoffset+threadIdx.x];
+	if(threadIdx.y == (BLOCKL/2)-1)
+		sS[(BLOCKL+1)*(BLOCKL+2)+(threadIdx.x+1)] = (Yoffset == L-BLOCKL) ? s[Xoffset+threadIdx.x] : s[(Yoffset+BLOCKL)*L+Xoffset+threadIdx.x];
+	
+	
+	if(threadIdx.x == 0){
+		if(blockIdx.x == 0){
+			sS[(2*threadIdx.y+1)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y)*L+(L-1)];
+			sS[(2*threadIdx.y+2)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y+1)*L+(L-1)];
+		}
+		else{
+			sS[(2*threadIdx.y+1)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y)*L+(Xoffset-1)];
+			sS[(2*threadIdx.y+2)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y+1)*L+(Xoffset-1)];
+		}
+	}
+
+	if(threadIdx.x == BLOCKL-1){
+		if(blockIdx.x == GRIDL-1){
+			sS[(2*threadIdx.y+1)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y)*L];
+			sS[(2*threadIdx.y+2)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y+1)*L];
+		}
+		else{
+			sS[(2*threadIdx.y+1)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y)*L+Xoffset+BLOCKL];
+			sS[(2*threadIdx.y+2)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+BLOCKL];
+		}
+	}
+	__syncthreads();
+
+	//Qui ci vanno un po' di variabili per inizializzare MTGPU
+	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
+	//Fine*************
+	int ie=0;
+	unsigned int x = threadIdx.x;
+	unsigned int y1= 2*threadIdx.y+(threadIdx.x%2);
+    unsigned int y2= 2*threadIdx.y+((threadIdx.x+1)%2);
+		
+		int ide = sS(x,y1)*(sS(x-1,y1)+sS(x+1,y1)+sS(x,y1+1)+sS(x,y1-1));
+		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		//if(LCG32(aa) < tex1Dfetch(boltzT, ide+2*DIM)){
+			sS(x,y1) = -sS(x,y1);
+			ie -=2*ide;
+		}
+		__syncthreads();
+		
+		ide = sS(x,y2)*(sS(x-1,y2)+sS(x+1,y2)+sS(x,y2+1)+sS(x,y2-1));
+		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
+		//if(LCG32(aa) < tex1Dfetch(boltzT, ide+2*DIM)){
+			sS(x,y2) = -sS(x,y2);
+			ie -= 2*ide;
+		}
+		__syncthreads();
+
+		s[(Yoffset+2*threadIdx.y)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1];
+		s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1];
+		a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
+		b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
+		c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
+		d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
+	
+		__shared__ int deltaE[THREADS];
+		deltaE[n] = ie;
+		for(int stride = THREADS>>1; stride > 0 ; stride >>=1){
+			__syncthreads();
+			if(n < stride) deltaE[n] += deltaE[n+stride];
+		}
+		if(n == 0) energie[blockIdx.y*GRIDL+blockIdx.x] += deltaE[0];
+		__syncthreads();
+
+}
+
+
+
+
+
+
+
+
+
 
 
 __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
@@ -112,93 +209,6 @@ __global__ void do_update_testB(spin_t *s, UI *a, UI *b, UI *c, UI *d,  UI offse
     d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 }
 
-__global__ void do_update_shared(spin_t *s, UI *a, UI *b, UI *c, UI *d, UI offset, int *energie){
-
-
-	unsigned int n = threadIdx.y*BLOCKL+threadIdx.x;
-	unsigned int Xoffset = blockIdx.x*BLOCKL;
-	unsigned int Yoffset = (2*blockIdx.y+(blockIdx.x+offset)%2)*BLOCKL;
-
-	__shared__ spin_t sS[(BLOCKL+2)*(BLOCKL+2)];
-
-	//se non sono sui bordi completo con la doppia scacchiera
-	sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1] = s[(Yoffset+2*threadIdx.y)*L+(Xoffset+threadIdx.x)];
-	sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1] = s[(Yoffset+2*threadIdx.y+1)*L+(Xoffset+threadIdx.x)];
-	
-	//bordo in alto
-	/*if(threadIdx.y == 0)
-		sS[threadIdx.x+1] = (Yoffset == 0) ? s[(L-1)*L+Xoffset+threadIdx.x] : s[(Yoffset-1)*L+Xoffset+threadIdx.x];
-	if(threadIdx.y == (BLOCKL/2)-1)
-		sS[(BLOCKL+1)*(BLOCKL+2)+(threadIdx.x+1)] = (Yoffset == L-BLOCKL) ? s[Xoffset+threadIdx.x] : s[(Yoffset+BLOCKL)*L+Xoffset+threadIdx.x];
-	
-	
-	if(threadIdx.x == 0){
-		if(blockIdx.x == 0){
-			sS[(2*threadIdx.y+1)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y)*L+(L-1)];
-			sS[(2*threadIdx.y+2)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y+1)*L+(L-1)];
-		}
-		else{
-			sS[(2*threadIdx.y+1)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y)*L+(Xoffset-1)];
-			sS[(2*threadIdx.y+2)*(BLOCKL+2)] = s[(Yoffset+2*threadIdx.y+1)*L+(Xoffset-1)];
-		}
-	}
-
-	if(threadIdx.x == BLOCKL-1){
-		if(blockIdx.x == GRIDL-1){
-			sS[(2*threadIdx.y+1)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y)*L];
-			sS[(2*threadIdx.y+2)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y+1)*L];
-		}
-		else{
-			sS[(2*threadIdx.y+1)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y)*L+Xoffset+BLOCKL];
-			sS[(2*threadIdx.y+2)*(BLOCKL+2)+BLOCKL+1] = s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+BLOCKL];
-		}
-	}
-	__syncthreads();*/
-
-	//Qui ci vanno un po' di variabili per inizializzare MTGPU
-	unsigned int *aa = &a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *bb = &b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *cc = &c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	unsigned int *dd = &d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n];
-	//Fine*************
-	int ie=0;
-	unsigned int x = threadIdx.x;
-	unsigned int y1= 2*threadIdx.y+(threadIdx.x%2);
-        unsigned int y2= 2*threadIdx.y+((threadIdx.x+1)%2);
-		
-		int ide = sS(x,y1)*(sS(x-1,y1)+sS(x+1,y1)+sS(x,y1+1)+sS(x,y1-1));
-		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
-			sS(x,y1) = -sS(x,y1);
-			ie -=2*ide;
-		}
-		__syncthreads();
-		
-		ide = sS(x,y2)*(sS(x-1,y2)+sS(x+1,y2)+sS(x,y2+1)+sS(x,y2-1));
-		if(MTGPU(aa, bb, cc, dd) < tex1Dfetch(boltzT, ide+2*DIM)){
-			sS(x,y2) = -sS(x,y2);
-			ie -= 2*ide;
-		}
-		__syncthreads();
-
-		s[(Yoffset+2*threadIdx.y)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+1)*(BLOCKL+2)+threadIdx.x+1];
-		s[(Yoffset+2*threadIdx.y+1)*L+Xoffset+threadIdx.x] = sS[(2*threadIdx.y+2)*(BLOCKL+2)+threadIdx.x+1];
-		a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
-		b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
-		c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
-		d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
-	
-		__shared__ int deltaE[THREADS];
-		deltaE[n] = ie;
-		for(int stride = THREADS>>1; stride > 0 ; stride >>=1){
-			__syncthreads();
-			if(n < stride) deltaE[n] += deltaE[n+stride];
-		}
-		if(n == 0) energie[blockIdx.y*GRIDL+blockIdx.x] += deltaE[0];
-		__syncthreads();
-
-}
-
-
 
 void get_lattice(spin_t *s_){
 	for(int y=0; y<L; ++y){
@@ -263,7 +273,7 @@ int main(int argc, char**argv){
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
 
-	fill_ran_vec4(a, b, c, d, TOT_TH);
+	fill_ran_vec2(a, b, c, d, TOT_TH);
 	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
@@ -277,7 +287,14 @@ int main(int argc, char**argv){
 	
 
 	s = (spin_t*)malloc(N*sizeof(spin_t));
-	for(int i=0; i<N; i++) s[i]=1;
+	for(int i=0; i<N; i++){
+	//		if(rand()/((double)RAND_MAX) < 0.5){
+	//				s[i]=-1;
+	//		}else{
+					s[i]=1;
+	//		}
+	}
+
 	cudaMalloc((void**)&sD, N*sizeof(spin_t));
 	cudaMemcpy(sD, s, N*sizeof(spin_t), H_D);
 
@@ -300,42 +317,44 @@ int main(int argc, char**argv){
 	double chi_sqr_2=0;
 	double chi_sqr_m=0;	
 	
-	for(int i=0; i < 1000; ++i){
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+	/*for(int i=0; i < 1000; ++i){
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
-
+*/
 
 	double start = getTime();
+	printf("0\t1\n");
 	for(int i=0; i < STEP_MC; ++i){
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 			
 		cudaThreadSynchronize();
 		
-		//get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
-		//cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
+		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
+		cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
 		
-		//for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
-		//	m+=vec_mag[bl];
-		//m = m / (GRIDL*GRIDL);
-		//M+=fabs(m);
+		for(int bl=0; bl < (GRIDL*GRIDL); bl++ )
+			m+=vec_mag[bl];
+		m = m / (GRIDL*GRIDL);
+		M+=fabs(m);
 		
-		//cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
-		//for(int bl=0; bl < BLOCKS; bl++)
-		//	sumE+=energie[bl];
-		//E += (double)sumE;
-		//chi_sqr+=pow(E/(i+1)-sumE,2.);
-		//E_2 += pow((double)sumE,2.);
-		//chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
-		//chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
-		
-		//m=0;	
-		//sumE=ie;
+		cudaMemcpy(energie, energie_d, BLOCKS*sizeof(int), D_H);
+		for(int bl=0; bl < BLOCKS; bl++)
+			sumE+=energie[bl];
+		E += (double)sumE;
+		chi_sqr+=pow(E/(i+1)-sumE,2.);
+		E_2 += pow((double)sumE,2.);
+		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
+		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
+		printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
+
+		m=0;	
+		sumE=ie;
 	}
 	double end = getTime();
 	//cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);
@@ -352,8 +371,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	//printf("%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	//printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 

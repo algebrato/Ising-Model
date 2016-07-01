@@ -8,6 +8,7 @@ SRCDIR		= src
 ## Switch #######################################
 DEVICE		:=true
 DEBUGMODE	:= true
+#INTEL       := true
 #################################################
 
 
@@ -17,7 +18,13 @@ ifdef DEVICE
 NVCC		:= nvcc -G
 ESEGUIBILE	:= ising_cu.x 
 OBJ		:= ising.o fill_ran.o get_time.o
+
+ifdef INTEL
+CC		:= icc
+else
 CC		:= g++
+endif
+
 
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
