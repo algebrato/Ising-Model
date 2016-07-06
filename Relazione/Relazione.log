@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2015/dev/Debian) (preloaded format=pdflatex 2015.11.26)  1 JUL 2016 11:45
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2015/dev/Debian) (preloaded format=pdflatex 2015.12.15)  6 JUL 2016 11:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -577,8 +577,7 @@ subscribe by emailing sympa@lirmm.fr with 'subscribe <list> <firstname name>'
 \c@algocf=\count124
 \algocf@algoframe=\box36
 \algocf@algobox=\box37
-)
-No file Relazione.aux.
+) (./Relazione.aux)
 \openout1 = `Relazione.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
@@ -603,6 +602,7 @@ LaTeX Info: Redefining \it@ocap on input line 29.
 LaTeX Info: Redefining \it@ccap on input line 29.
 \AtBeginShipoutBox=\box38
 Package hyperref Info: Link coloring OFF on input line 29.
+
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 
@@ -657,147 +657,92 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 35.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 40.
+) [1
 
-(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
-File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
-)
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 40.
- [1
-
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-
-LaTeX Warning: Reference `DET:FIN' on page 3 undefined on input line 73.
-
-[3] [4]
-
-LaTeX Warning: Reference `figura:CPU' on page 5 undefined on input line 120.
-
-<../CPU/Result/Ising_Mag_Cv.pdf, id=82, 867.24pt x 433.62pt>
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+<acc_rat.pdf, id=77, 361.35pt x 216.81pt>
+File: acc_rat.pdf Graphic file (type pdf)
+ <use acc_rat.pdf>
+Package pdftex.def Info: acc_rat.pdf used on input line 102.
+(pdftex.def)             Requested size: 341.43306pt x 204.86006pt.
+ [4] [5 <./acc_rat.pdf>] <../CPU/Result/Ising_Mag_Cv.pdf, id=108, 867.24pt x 43
+3.62pt>
 File: ../CPU/Result/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
 <use ../CPU/Result/Ising_Mag_Cv.pdf>
-Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 125.
+Package pdftex.def Info: ../CPU/Result/Ising_Mag_Cv.pdf used on input line 137.
 
 (pdftex.def)             Requested size: 426.79134pt x 213.39536pt.
 
-Overfull \hbox (14.22638pt too wide) in paragraph at lines 125--126
+Overfull \hbox (14.22638pt too wide) in paragraph at lines 137--138
  [][] 
  []
 
-
-LaTeX Warning: Reference `figura:randomCPU' on page 5 undefined on input line 1
-30.
-
-<../CPU/Result/Term_step.pdf, id=84, 505.89pt x 505.89pt>
+<../CPU/Result/Term_step.pdf, id=111, 505.89pt x 505.89pt>
 File: ../CPU/Result/Term_step.pdf Graphic file (type pdf)
 
 <use ../CPU/Result/Term_step.pdf>
-Package pdftex.def Info: ../CPU/Result/Term_step.pdf used on input line 133.
+Package pdftex.def Info: ../CPU/Result/Term_step.pdf used on input line 145.
 (pdftex.def)             Requested size: 341.43306pt x 341.43785pt.
- [5]
-<../CUDA/Result/Res3/Ising_Mag_Cv.pdf, id=91, 867.24pt x 433.62pt>
+ [6 <../CPU/Result/Ising_Mag_Cv.pdf>] [7 <../CPU/Result/Term_step.pdf>]
+<../CUDA/Result/Res3/Ising_Mag_Cv.pdf, id=149, 867.24pt x 433.62pt>
 File: ../CUDA/Result/Res3/Ising_Mag_Cv.pdf Graphic file (type pdf)
 
 <use ../CUDA/Result/Res3/Ising_Mag_Cv.pdf>
 Package pdftex.def Info: ../CUDA/Result/Res3/Ising_Mag_Cv.pdf used on input lin
-e 149.
+e 161.
 (pdftex.def)             Requested size: 426.79134pt x 213.39536pt.
 
-Overfull \hbox (14.22638pt too wide) in paragraph at lines 149--150
+Overfull \hbox (14.22638pt too wide) in paragraph at lines 161--162
  [][] 
  []
 
-[6 <../CPU/Result/Ising_Mag_Cv.pdf>]
-
-LaTeX Warning: Reference `figura:time' on page 7 undefined on input line 155.
-
-
-LaTeX Warning: Reference `figura:GPU' on page 7 undefined on input line 157.
-
-<../CUDA/Result/Res3/Time_PNRG.pdf, id=115, 867.24pt x 505.89pt>
+[8 <../CUDA/Result/Res3/Ising_Mag_Cv.pdf>]
+<../CUDA/Result/Res3/Time_PNRG.pdf, id=176, 867.24pt x 505.89pt>
 File: ../CUDA/Result/Res3/Time_PNRG.pdf Graphic file (type pdf)
 
 <use ../CUDA/Result/Res3/Time_PNRG.pdf>
 Package pdftex.def Info: ../CUDA/Result/Res3/Time_PNRG.pdf used on input line 1
-63.
+75.
 (pdftex.def)             Requested size: 341.43306pt x 199.17207pt.
 
-Underfull \hbox (badness 1394) in paragraph at lines 164--164
-[]\T1/cmr/m/n/12 Figura 4: |Con-fron-to del tem-po di ge-ne-ra-zio-ne di un nu-
+Underfull \hbox (badness 1394) in paragraph at lines 176--176
+[]\T1/cmr/m/n/12 Figura 5: |Con-fron-to del tem-po di ge-ne-ra-zio-ne di un nu-
 me-ro
  []
 
-[7 <../CPU/Result/Term_step.pdf>]
-
-LaTeX Warning: Reference `figura:randomCPU' on page 8 undefined on input line 1
-68.
-
-
-LaTeX Warning: Reference `time:per:random' on page 8 undefined on input line 16
-8.
-
-<../CUDA/Result/Res3/Time_BLOCK.pdf, id=132, 867.24pt x 505.89pt>
+<../CUDA/Result/Res3/Time_BLOCK.pdf, id=180, 867.24pt x 505.89pt>
 File: ../CUDA/Result/Res3/Time_BLOCK.pdf Graphic file (type pdf)
 
 <use ../CUDA/Result/Res3/Time_BLOCK.pdf>
 Package pdftex.def Info: ../CUDA/Result/Res3/Time_BLOCK.pdf used on input line 
-172.
+184.
 (pdftex.def)             Requested size: 341.43306pt x 199.17207pt.
-
-
-LaTeX Warning: Reference `figura:CPU' on page 8 undefined on input line 197.
-
-
-LaTeX Warning: Reference `figura:GPU' on page 8 undefined on input line 197.
-
-[8 <../CUDA/Result/Res3/Ising_Mag_Cv.pdf>]
-
-LaTeX Warning: Reference `figura:CPU' on page 9 undefined on input line 199.
-
-
-LaTeX Warning: Reference `figura:GPU' on page 9 undefined on input line 199.
-
-
-LaTeX Warning: Reference `tab:mag' on page 9 undefined on input line 201.
-
-[9 <../CUDA/Result/Res3/Time_PNRG.pdf>]
-
-LaTeX Warning: Reference `figura:time' on page 10 undefined on input line 242.
-
-<../CPU-GPU-time.pdf, id=173, 433.62pt x 433.62pt>
+ [9 <../CUDA/Result/Res3/Time_PNRG.pdf>] [10 <../CUDA/Result/Res3/Time_BLOCK.pd
+f>]
+<../CPU-GPU-time.pdf, id=221, 433.62pt x 433.62pt>
 File: ../CPU-GPU-time.pdf Graphic file (type pdf)
  <use ../CPU-GPU-time.pdf>
-Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 245.
+Package pdftex.def Info: ../CPU-GPU-time.pdf used on input line 257.
 (pdftex.def)             Requested size: 341.43306pt x 341.4511pt.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 257.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 269.
 
-[10 <../CUDA/Result/Res3/Time_BLOCK.pdf>] [11] [12 <../CPU-GPU-time.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 257.
-
-(./Relazione.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 257.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 257.
+[11] [12] [13 <../CPU-GPU-time.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 269.
+ (./Relazione.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 269.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 269.
 Package rerunfilecheck Info: File `Relazione.out' has not changed.
 (rerunfilecheck)             Checksum: B7C170726CCAA6C8B11695C1E85222B6;537.
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 9854 strings out of 493105
- 140484 string characters out of 6137071
- 259746 words of memory out of 5000000
- 13136 multiletter control sequences out of 15000+600000
- 21607 words of font info for 57 fonts, out of 8000000 for 9000
+ 9851 strings out of 493105
+ 140366 string characters out of 6137071
+ 261007 words of memory out of 5000000
+ 13129 multiletter control sequences out of 15000+600000
+ 21450 words of font info for 59 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,11n,38p,1461b,365s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,11n,38p,1465b,371s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist
@@ -807,16 +752,17 @@ ublic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
 msfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy1
 0.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><
-/usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fon
-ts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-s
-uper/sfbx1728.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></
-usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/font
-s/type1/public/cm-super/sfrm1440.pfb></usr/share/texmf/fonts/type1/public/cm-su
-per/sfti1200.pfb>
-Output written on Relazione.pdf (12 pages, 438728 bytes).
+/usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fon
+ts/type1/public/cm-super/sfbx1728.pfb></usr/share/texmf/fonts/type1/public/cm-s
+uper/sfbx2488.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0700.pfb></
+usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texmf/font
+s/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-su
+per/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1440.pfb></u
+sr/share/texmf/fonts/type1/public/cm-super/sfti1200.pfb>
+Output written on Relazione.pdf (13 pages, 470022 bytes).
 PDF statistics:
- 281 PDF objects out of 1000 (max. 8388607)
- 218 compressed objects within 3 object streams
- 46 named destinations out of 1000 (max. 500000)
- 131 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 325 PDF objects out of 1000 (max. 8388607)
+ 255 compressed objects within 3 object streams
+ 49 named destinations out of 1000 (max. 500000)
+ 142 words of extra memory for PDF output out of 10000 (max. 10000000)
 

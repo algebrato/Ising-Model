@@ -21,7 +21,7 @@
 \setlength{\topmargin}{.25in}     % Distance from top to PAGE'S HEAD -1 inch
 \setlength{\textheight}{225mm}    % Height of the body of page
 \setlength{\headheight}{0mm}      % Height of a box containing the head
-\setlength{\parskip}{0.5mm}         % Extra vertical space before a paragraph
+\setlength{\parskip}{0.5mm}		  % Extra vertical space before a paragraph
 \setlength{\parindent}{9mm}       % Width of the indentation 
 \linespread{1.12}                 % Line spacing        
 \renewcommand{\floatpagefraction}{.9}
@@ -30,47 +30,49 @@
 \author{Stefano Mandelli\\
 Matricola: 861838}
 \title{\bf \Huge Confronto delle prestazioni CPU-GPU per la simulazione di un reticolo di Ising-2D}
-\date{}
+\date{13 - Luglio - 2016}
 \maketitle
 \section*{Introduzione}
-Per confrontare le prestazioni di CPU e GPU in questo lavoro è stato scelto il modello di Ising 2D. \`E un modello analitico, nel senso che al limite termodinaco esiste una soluzione analitica esatta. 
+In questo lavoro vengono messe a confronto le prestazioni di CPU\footnote{Central Processing unit} e GPU\footnote{Graphics Processing Unit}, usando come banco di prova un modello fisico ben conosciuto di cui sono note, in modo analitico, le espressioni delle varie grandezze fisiche che si vogliono simulare. Il modello in questione \`e il \emph{reticolo di Ising bidimensionale}. 
 
-\`E stato possibile riportare il codice, operazione per operazione, compresa la generazione dei numeri pseudorandom, da singola CPU alla fine parallelizzazione delle GPU in questo modo sarà possibile valutare lo speed-up di prestazioni in modo quantitativo perfettamente consistente. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata correlata anche al tipo di implementazione del \emph{Generatore di Numeri Pseudorandom (PNRG)}. I punti che verranno trattati in questo lavoro sono i seguenti:
-\begin{itemize}
-	\item Breve introduzione sul modello usato;
-	\item Implementazione del codice;
-	\item Consistenza fisica del modello;
-	\item Discussione sulla diversità dei risultati;
-	\item Comparazione delle prestazioni per diverse implementazioni;
-\end{itemize}
+Durante l'implementazione da CPU a GPU, \`e stato possibile riportare il codice, da un ambienete all'altro, mantenendo lo stesso algoritmo e quindi lo stesso numero di operazioni che vengono fatte durante l'aggiornamento dei siti reticolari.
+
+\`E stato possibile riportare da un ambiete all'altro anche il generatore di numeri pseudorandom, in modo da rendere consistente la valutazione dello speed-up. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata correlata anche al tipo di implementazione del \emph{Generatore di Numeri Pseudorandom (PNRG)}. 
+
+Il lavoro consister\`a in una prima presentazione del modello fisico usato a cui seguir\`a la presentazione dell'algoritmo usato per l'update dei siti reticolari. Una volta presentati modello e algoritmo di update viene descritta l'implementazione su GPU discutendo in primis la consistenza fisica della simulazione e successivamente i vari accorgimenti per ottimizzare le prestazioni.
+
 
 \section{Scelta del modello}
-Il modello di Ising-2D è un modello che si presta molto bene ad essere parallelizzato, in quanto è un tipico modello interagente a corto range. Per questo tipo di interazioni \`e facile trovare strategie di parallelizzazione molto efficaci.
+Il modello di \emph{Ising-2D} è un modello che si presta molto bene ad essere parallelizzato in quanto è un tipico modello interagente a corto range. Per questo tipo di interazioni \`e facile trovare strategie di parallelizzazione efficaci.
 
-Il modello di Ising è caratterizzato da un reticolo (ad esempio ipercubico) in $D$ dimensioni. Ad ogni cella del reticolo viene associato uno spin che può essere solo del tipo $s_i=\lbrace +1, -1 \rbrace$ a seconda che la direzione del dipolo magnetico, associato alla cella $i-esima$ del reticolo, risulti verso l'alto o verso il basso. 
+Il modello di Ising è caratterizzato da un reticolo in $D$ dimensioni. Ad ogni cella del reticolo viene associato uno spin che può essere solo del tipo $s_i=\lbrace +1, -1 \rbrace$ a seconda che la direzione del dipolo magnetico, associato alla cella $i-esima$ del reticolo, risulti verso l'alto o verso il basso. 
 
 Il sistema è descritto dall’Hamiltoniana di Ising
 \newl{\mathcal{H}=-J\sum_{\langle i,j\rangle}s_is_j -h\sum_{i}s_i,}
-dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è fatta su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. 
+dove $h$ identifica un eventuale campo magnetico uniforme esterno. La prima sommatoria è  su tutte le coppie di siti primi vicini e $J$ indica la costante di accoppiamento tra spin. 
 
-In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e a campo magnetico esterno nullo, quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una transizione di fase in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema si comporta in modo paramagnetico. Per temperature inferiori invece si ha un fenomeno di magnetizzazione spontanea. 
+In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e a campo magnetico esterno nullo quindi $h = 0$. Al limite termodinamico, il modello di Ising (escluso il caso $1D$) presenta una \emph{transizione di fase} in prossimità di una temperatura critica $T_c$ . Per temperature maggiori di $T_c$ il sistema \`e perfettamente \emph{paramagnetico}. Per temperature inferiori invece si ha un fenomeno di \emph{magnetizzazione spontanea}. 
 
-Le principali grandezze fisiche che possono essere calcolate sono la magnetizzazione media del sistema $\langle M\rangle$  e la capacità termica a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantità estensive divergono al limite termodinamico. Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = L \times L$ spins che si desidera confrontare per diversi size. \`E utile pertanto confrontare la densità di calore specifico $c_V = CV /N$ e di magnetizzazione che è la variabile coniugata al campo esterno $h$
-\newl{m=\frac{1}{N}\left\langle\sum_is_i\right\rangle}
-Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato nel seguente modo: per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione è molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$, in questo modo $\langle M \rangle$ risulta nulla. 
+Le principali grandezze fisiche che possono essere calcolate sono la \emph{magnetizzazione media} del sistema $\langle M\rangle$  e la \emph{capacità termica} a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantit\`a estensive divergono al limite termodinamico. 
 
-Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il modello di Ising 2D, presenta una transizione di fase netta. Il sistema passa, in modo spontaneo, da una situazione di ordine in cui gli spin sono orientati prevalentemente nella stessa direzione quindi hanno in maggioranza valore $+1$ oppure $-1$. I due casi, per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins, per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $\langle M \rangle = 0$. 
+Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = L \times L$ spins che si desidera confrontare per diversi size. \`E utile pertanto confrontare la \emph{densità di calore specifico} $c_V = CV /N$ e di \emph{magnetizzazione} che è la variabile coniugata al campo esterno $h$
+\newl{m=\frac{1}{N}\left\langle\sum_is_i\right\rangle.}
 
-Per modelli finiti sufficientemente grandi è ugualmente possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ . Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising, con molti spin a valore $+1$ sarà favorito. In questo modo, per temperature inferiori a quella critica, si hanno dei valori di magnetizzazione non nulli e dello stesso segno ed è quindi possibile valutare l’entità della magnetizzazione spontanea.
+Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato a causa del fatto che per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione diventa molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$. In questo modo $\langle M \rangle$ risulta nulla. 
+
+Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi loro primi vicini. Si nota che in questo range di temperature il \emph{modello di Ising 2D}, presenta una transizione di fase netta. Scendendo con la temperatura sotto a $T_c$, il sistema passa in modo spontaneo, da una situazione totalmente disordinata, ad una ordinata in cui gli spin sono in gran parte allineati nella stessa direzione. I due casi (tutti spin \emph{up} o tutti spin \emph{down}), per campo magnetico esterno nullo $(h = 0)$, sono equiprobabili, in quanto per $h = 0$ l’Hamiltoniana di Ising è pari per inversione di tutti gli spins. Per tempi molto lunghi entrambi gli stati vengono popolati per la stessa quantità di tempo facendo risultare, anche in questo caso, $\langle M \rangle = 0$. 
+
+Per modelli finiti sufficientemente grandi è possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ che abbiano valore non nullo. Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising con molti spin a valore $+1$ sarà favorito. 
 
 \subsection{Algoritmo di Metropolis}
-Dato che le fluttuazioni di energia, rispetto all'energia totale del sistema, sono piccole, un modo sufficientemente efficiente di generare delle mosse Monte Carlo, è quello definito dalla \emph{dinamica a singolo spin-flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
+L'algoritmo usato per far evolvere il sistema \`e quello di \emph{Metropolis}, con aggiornamento del sito per \emph{singolo spin flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
 
-Risulta evidente che nei passi di evoluzione, secondo un algoritmo di tipo Metropolis, il primo passo \`e quello di definire la probabilit\`a con cui scegliere lo spin a cui apportare la modifica. Come detto precedentemente, essendo una dinamica a \emph{singolo spin flip} si ha che 
+Si denisce quindi l'algoritmo di Metropolis per un reticolo di Ising, caratterizzato da aggiornamento a singolo spin flip, tramite la definizione di una probabilit\`a di selezionare lo spin da aggiornate, chiamata \emph{probabilit\`a di selezione} $g(\mu \to \nu)$ e una probabilit\`a di accettare l'update proposto, chiamata \emph{probabilit\`a di accettazione} $A(\mu \to \nu)$. Essendo la dinamica a \emph{singolo spin flip} si ha che la probabilit\`a che uno spin ha di essere selezionato \`e la stessa per tutti gli spin. Dato $N$ il numero totale di spin nel reticolo, si ha che
 \newl{g(\mu\to\nu)=\frac{1}{N}\,.}
+
 Con la probabilità di selezione definita in questo modo la condizione del \emph{bilancio dettagliato} prende la forma
 \newl{\frac{P(\mu\to\nu)}{P(\nu\to\mu)} = \frac{g(\mu\to\nu)A(\mu\to\nu)}{g(\nu\to\mu)A(\nu\to\mu)} = \frac{p_\nu}{p_\mu} = e^{-\beta (E_\nu-E_\mu)}\, \label{DET:FIN} }
-e dato che $g(\mu\to\nu)=g(\nu\to\mu)$ si sceglie l'acceptance ratio in modo tale che soddisfi l'equazione $(\ref{DET:FIN})$
+e dato che $g(\mu\to\nu)=g(\nu\to\mu)$ si sceglie il \emph{rateo di accettazione} in modo tale che soddisfi l'equazione $(\ref{DET:FIN})$
 \newl{\frac{A(\mu\to\nu)}{A(\nu\to\mu)} = e^{-\beta (E_\nu - E_\mu)},}
 da cui è possibile dedurre che
 \newl{A(\mu\to\nu) = A_0 e^{-\frac{1}{2}\beta(E_\nu-E_\mu)}\label{acc-rat-azer}\,.}
@@ -84,7 +86,7 @@ che permette di stabilire la scelta migliore possibile del coefficiente
 La scrittura finale per il \emph{rateo di accettazione} risulta quindi essere
 \newl{A(\mu\to\nu)= e^{-\frac{1}{2} \beta(E_\nu-E_\mu + 2zJ) },\label{acc:ratio}}
 in modo da avere $A(\mu\to\nu) \leq 1$.
-Si può verificare che l' $A(\mu\to\nu)$ scritta ora è molto inefficiente. Il sistema rimane per troppo tempo nello stesso stato. Una scelta migliore che rispetta tutte le condizioni di quella precedente è data proprio dall'acceptance ratio proposta da Metropolis
+Si può verificare che l' $A(\mu\to\nu)$ scritta ora è molto inefficiente. Il sistema rimane per troppo tempo nello stesso stato. Una scelta migliore che rispetta tutte le condizioni di quella precedente è quella in Fig.~\ref{acc_rat_met}, data proprio dall'acceptance ratio proposta da Metropolis
 \begin{equation} 
 A(\mu\to\nu)=\left\{
         \begin{aligned}
@@ -94,6 +96,14 @@ A(\mu\to\nu)=\left\{
         \end{aligned}
         \right.
 \end{equation}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=120mm,angle=0,clip=]{acc_rat.pdf}
+	\caption{sadasda}
+	\label{acc_rat_met}
+\end{figure}
+
 Per il modello di Ising i \emph{ratei di accettazione} appena descritti hanno la particolarit\`a che possono essere calcolati mediante la sola conoscenza degli spins primi vicini allo spin di cui si propone il suo flip, questo perchè l'interazione nel modello di Ising  è a corto raggio. 
 
 Nel caso dell'Hamiltoniana di Ising, questa differenza è possibile scriverla in modo molto semplice, in funzione solo dagli spin primi vicini dello spin di cui si propone il flip
@@ -106,27 +116,29 @@ Nel caso dell'Hamiltoniana di Ising, questa differenza è possibile scriverla in
 
 
 \section{Implementazione del codice}
-La strategia di implementazione che \`e stata adottata in questo lavoro consiste in una prima implementazione su CPU e la successiva implementazione su scheda grafica. L'obiettivo \`e quello di riottenere gli stessi risultati e gli stessi grafici. 
+La strategia di implementazione che \`e stata adottata in questo lavoro consiste in una prima implementazione su CPU e la successiva implementazione su scheda grafica. L'obiettivo \`e quello di riottenere gli stessi risultati fisici e valutare lo \emph{speed-up} dato dall'utilizzo della GPU. 
 
-Un primo confronto viene fatto con i grafici di \emph{Magnetizzazione} e \emph{Calore Specifico} in funzione di $\beta$, con la soluzione esatta di Onsager. Questo confronto \`e per verificare la compatibilit\`a della simulazione con il modello fisico. Successivamente sono stati confrontati gli stessi risultati ottenuti su GPU e CPU. 
+La consistenza fisica della simulazione viene fatta comparando i grafici di \emph{Magnetizzazione} e \emph{Calore Specifico} in funzione di $\beta$, con la soluzione esatta di Onsager al limite Termodinamico. Successivamente sono stati confrontati gli stessi risultati ottenuti su GPU e CPU. 
 
 Il secondo risultato che viene presentato riguarda le caratteristiche (punti favorevoli e punti sfavorevoli) di diversi PRNG, nel particolare \`e stato confrontato il numero di step di termalizzazione in funzione alla complessit\`a numerica della generazione. 
 
-Il terzo risultato che viene presentato riguarda la ricerca di un BLOCKL di dimensione tale da portare a saturazione ogni singolo WARP.
+Il terzo risultato che viene presentato riguarda la ricerca di un BLOCKL di dimensione tale da portare a saturazione ogni singolo WARP. Tenendo in considerazione il fatto che in un blocco possono operare in modo parallelo $1024$ threads \`e necessario trovare il numero corretto di threads in $x$ e $y$ in modo da avvicinarsi il pi\`u possibile a $1024$.
 
 Le conclusioni finali sull'ottimizzazione del programma terranno conto di tutte le conclusioni presentate precedentemente.
 
 \subsection{Implementazione su CPU}
-In Fig.~\ref{figura:CPU} sono presentati i risultati di Magnetizzazione e Calore specifico, per diversi size in funzione di $\beta$, comparati con la soluzione analitica al limite termodinamico di Onsager.
+In Fig.~\ref{figura:CPU} sono presentati i risultati di \emph{Magnetizzazione} e \emph{Calore specifico}, per diversi size in funzione di $\beta$, comparati con la soluzione analitica al limite termodinamico di Onsager.
 
-Si notano in modo evidenti gli effetti di \emph{size scaling} per reticoli molto piccoli. Al crescere della taglia del reticolo, i risultati della simulazione si avvicinano sempre di pi\`u al modello al limite termodinamico.
+Si notano in modo evidente gli effetti di \emph{size-scaling} per reticoli molto piccoli. Al crescere della taglia del reticolo i risultati della simulazione si avvicinano sempre di pi\`u al modello al limite termodinamico.
+
+I risultati riportati in Fig.~\ref{figura:CPU} mostrano anche che l'implementazione dell'algoritmo di update scritto precedente restituisce, su CPU, i valori attesi. Verificata la compatibilit\`a tra i valori numerici simulati e quelli teorici della soluzione di Onsager, \`e ora possibile passare all'implementazione su GPU con l'obiettivo di ottenere gli stessi risultati numerici valutando il relativo \emph{speed-up}.
 \begin{figure}
 	\centering
 		\includegraphics[width=150mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
 		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su CPU}
 		\label{figura:CPU}
 \end{figure}
-\subsection*{Comparazione tra diversi PNRG su CPU}
+
 In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del genratore pi\`u performante e quello meno performante c'\`e circa un fattore tre. 
 \begin{figure}
 \centering
