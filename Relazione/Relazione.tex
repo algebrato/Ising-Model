@@ -13,6 +13,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[width=125mm]{caption}
+\usepackage{tikz}
 \usepackage{amsthm}
 \usepackage{algorithm2e}
 % Dimensione della pagina
@@ -100,7 +101,7 @@ A(\mu\to\nu)=\left\{
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{acc_rat.pdf}
-	\caption{sadasda}
+	\caption{Rateo di Accettazione Metropolis in funzione a $\Delta E$}
 	\label{acc_rat_met}
 \end{figure}
 
@@ -147,6 +148,54 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 	\label{figura:randomCPU}
 \end{figure}
 \subsection{Implementazione su GPU}
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}[x=1.4cm,y=1.4cm]
+		%\fill (1,1) rectangle (2,2);
+		
+		
+		\foreach \p in {0,1,...,6}{
+				\draw [ultra thick] (\p,0) -- (\p,6);
+				\draw [ultra thick] (0,\p) -- (6,\p);
+			}
+		\foreach \p in {0,0.5,...,18}{
+				\draw (\p/3,0) -- (\p/3,6);
+				\draw (0,\p/3) -- (6,\p/3);
+			}
+
+		\foreach \blockx in {0,2,...,5}{
+				\foreach \blocky in {0,2,...,5}{
+					\fill [fill=red, opacity=0.5] (\blockx,\blocky) rectangle (\blockx+1,\blocky+1);
+			}
+		}
+		\foreach \blockx in {0,2,...,5}{
+				\foreach \blocky in {0,2,...,5}{
+					\fill [fill=red, opacity=0.5] (\blockx+1,\blocky+1) rectangle (\blockx+2,\blocky+2);
+			}
+		}
+
+		\fill [fill=yellow, opacity=0.7] (1,2) rectangle (2,2+0.5/3);
+		\fill [fill=yellow, opacity=0.7] (1,1) rectangle (1-0.5/3,2);
+		\fill [fill=yellow, opacity=0.7] (1,1) rectangle (2,1-0.5/3);
+		\fill [fill=yellow, opacity=0.7] (2,1) rectangle (2+0.5/3,2);
+
+		\foreach \a in {0,2,...,5}{
+				\foreach \b in {0,2,...,5}{
+					\fill [fill=black, opacity=0.7] (1+\a*0.5/3,1+\b*0.5/3) rectangle (1+\a*0.5/3+0.5/3,1+\b*0.5/3+0.5/3);
+			}
+	}
+		\foreach \a in {0,2,...,5}{
+				\foreach \b in {0,2,...,5}{
+					\fill [fill=black, opacity=0.7] (1+\a*0.5/3+0.5/3,1+\b*0.5/3+0.5/3) rectangle (1+\a*0.5/3+2*0.5/3,1+\b*0.5/3+2*0.5/3);
+			}
+	}
+
+
+
+		\end{tikzpicture}
+	\end{center}
+	\caption{\`E possibil notare la strategia di update a doppia scacchiera. I blocchi vengono attivati a scacchiera. In ogni blocco, l'update degli spin \`e a sua volta fatto a scacchiera. In giallo sono identificati gli spin di \emph{cornice} che devono essere storati nella memoria shared, di ogni blocco, per garantire la condizione di raccordo \emph{blocco-blocco} }
+\end{figure}
 L'implementazione del codice su GPU passa attraverso due fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone \`e quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocit\`a di lettura/scrittura e minimizzazione di banck conflict. 
 
 La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocit\`a di lettura e scrittura dipende dal tipo di memoria usata mentre il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo, vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.

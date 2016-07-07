@@ -13,8 +13,8 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 128
-#define BLOCKL 8
+#define L 512
+#define BLOCKL 24
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -147,8 +147,6 @@ __global__ void do_update(spin_t *s_, UI *a, UI *b, UI *c, UI *d, UI offset, int
 	int tidx = threadIdx.x + blockDim.x*blockIdx.x;
 	int tidmy= threadIdx.y + blockDim.y*blockIdx.y;
 	int tidy = 2*tidmy+(tidx+offset)%2;
-	printf("%i\n",tidy);
-
 
 	int ide = s_[L*tidy+tidx]*(s_[L*tidy+((tidx==0)?L-1:tidx-1)]+s_[L*tidy+((tidx==L-1)?0:tidx+1)]+s_[L*((tidy==0)?L-1:tidy-1)+tidx]+s_[L*((tidy==L-1)?0:tidy+1)+tidx]);
 
@@ -216,7 +214,6 @@ void get_lattice(spin_t *s_){
 			printf("%i\t",s_[y*L+x]);
 		printf("\n");
 	}
-
 }
 
 int cpu_energy(spin_t *s){
@@ -317,22 +314,27 @@ int main(int argc, char**argv){
 	double chi_sqr_2=0;
 	double chi_sqr_m=0;	
 	
-	/*for(int i=0; i < 1000; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+	for(int i=0; i < 1000; ++i){
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
-*/
+
 
 	double start = getTime();
-	printf("0\t1\n");
 	for(int i=0; i < STEP_MC; ++i){
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-			
+		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		
+
+
 		cudaThreadSynchronize();
 		
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
@@ -351,7 +353,7 @@ int main(int argc, char**argv){
 		E_2 += pow((double)sumE,2.);
 		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
 		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
-		printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
+		//printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
 
 		m=0;	
 		sumE=ie;
@@ -371,8 +373,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	//printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	//printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
+	printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
