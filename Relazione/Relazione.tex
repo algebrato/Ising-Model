@@ -127,7 +127,7 @@ Il terzo risultato che viene presentato riguarda la ricerca di un BLOCKL di dime
 
 Le conclusioni finali sull'ottimizzazione del programma terranno conto di tutte le conclusioni presentate precedentemente.
 
-\subsection{Implementazione su CPU}
+\section{Implementazione su CPU}
 In Fig.~\ref{figura:CPU} sono presentati i risultati di \emph{Magnetizzazione} e \emph{Calore specifico}, per diversi size in funzione di $\beta$, comparati con la soluzione analitica al limite termodinamico di Onsager.
 
 Si notano in modo evidente gli effetti di \emph{size-scaling} per reticoli molto piccoli. Al crescere della taglia del reticolo i risultati della simulazione si avvicinano sempre di pi\`u al modello al limite termodinamico.
@@ -135,7 +135,7 @@ Si notano in modo evidente gli effetti di \emph{size-scaling} per reticoli molto
 I risultati riportati in Fig.~\ref{figura:CPU} mostrano anche che l'implementazione dell'algoritmo di update scritto precedente restituisce, su CPU, i valori attesi. Verificata la compatibilit\`a tra i valori numerici simulati e quelli teorici della soluzione di Onsager, \`e ora possibile passare all'implementazione su GPU con l'obiettivo di ottenere gli stessi risultati numerici valutando il relativo \emph{speed-up}.
 \begin{figure}
 	\centering
-		\includegraphics[width=150mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
+		\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
 		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su CPU}
 		\label{figura:CPU}
 \end{figure}
@@ -147,31 +147,17 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 	\caption{\emph{Passi Montecarlo} necessari per raggiungere la termalizzazione in funzione a tre diversi PNRG.}
 	\label{figura:randomCPU}
 \end{figure}
-\subsection{Implementazione su GPU}
+\section{Implementazione su GPU}
 L'implementazione del codice su GPU \`e stata organizzata in modo da poter mettere in luce tutte le varie caratteristiche che contraddistinguono le \emph{schede grafiche}. La prima caratteristica \`e l'elevato numero di ALU\footnote{Arithmetic and Logic Unit} messo a disposizione rispetto alle CPU, quindi una prima implementazione del codice \`e stata fatta portando il reticolo sulla \emph{memoria globale} della scheda e cercando di saturare il numero di ALU impegnate in modo parallelo, con una strategia di update a scacchiera.
 
 La seconda caratteristica di questo tipo di devices \`e la possibilit\`a di ottimizzare il proprio programma usando tutti i vari \emph{livelli di memoria} che vengono messi a disposizione. Oltre alla \emph{memoria globale} \`e possibile usare un livello di memoria superiore chiamato \emph{memoria shared}. Il vantaggio di questo tipo di memoria \`e che ha una velocit\`a di lettura/scrittura superiore a quella globale. Lo svantaggio \`e che le sue dimensioni sono pi\`u piccole ed \`e suddivisa per blocco. Per far comunicare due dati, istanziati su blocchi diversi di memoria shared \`e necessario quindi scrivere delle condizioni di raccordo.
 
-Il primo kernel naif che \`e possibile scrivere \`e quello che utilizza solo memoria globale e aggiorna gli spin seguendo solo una semplice scacchiera. Un kernel pi\`u elaborato che sia in grado di gestire anche il livello di \emph{memoria shared} segue una strategia di update dei siti esposta in Fig.~\ref{reticolo_shared} 
+Un primo kernel naif che \`e possibile scrivere \`e quello che utilizza solo memoria globale e aggiorna gli spin seguendo solo una singola scacchiera. Un kernel pi\`u elaborato che sia in grado di gestire anche il livello di \emph{memoria shared} segue una strategia di update dei siti esposta in Fig.~\ref{reticolo_shared}.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Il kernel viene lanciato due volte con un parametro di offset. Al primo run vengono aggiornati tutti i blocchi rossi. A loro volta gli spin all'interno del blocco vengono aggiornati seguendo una strategia a scacchiera. \`E necessario organizzare anche una scacchiera tra i blocchi per non creare conflitto tra spin che rappresentano le condizioni di \emph{raccordo blocco-blocco}, che in Fig.~\ref{reticolo_shared} sono rappresentati dalla \emph{cornice gialla}.
 \begin{figure}
 	\begin{center}
 		\begin{tikzpicture}[x=1.4cm,y=1.4cm]
-		%\fill (1,1) rectangle (2,2);
-		
 		
 		\foreach \p in {0,1,...,6}{
 				\draw [ultra thick] (\p,0) -- (\p,6);
@@ -209,41 +195,28 @@ Il primo kernel naif che \`e possibile scrivere \`e quello che utilizza solo mem
 			}
 	}
 
-
-
 		\end{tikzpicture}
 	\end{center}
-	\caption{\`E possibil notare la strategia di update a doppia scacchiera. I blocchi vengono attivati a scacchiera. In ogni blocco, l'update degli spin \`e a sua volta fatto a scacchiera. In giallo sono identificati gli spin di \emph{cornice} che devono essere storati nella memoria shared, di ogni blocco, per garantire la condizione di raccordo \emph{blocco-blocco} }
+	\caption{Strategia di update a doppia scacchiera. I blocchi vengono attivati a scacchiera. In ogni blocco, l'update degli spin \`e a sua volta fatto a scacchiera. In giallo sono identificati gli spin di \emph{cornice} che devono essere storati nella memoria shared, di ogni blocco, per garantire la condizione di raccordo \emph{blocco-blocco} }
 	\label{reticolo_shared}
 \end{figure}
 
 
+\subsection{Consistenza del modello Fisico su GPU}
+In Fig.~\ref{figura:CPU} e Fig.~\ref{figura:GPU} vengono rappresentati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. 
 
+Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
+\newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
+Effettuando un fit dei valori intorno alla temperatura critica, lasciando come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. In Fig.~\ref{figura:CPU} e Fig.~\ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti.
 
-
-
-L'implementazione del codice su GPU passa attraverso due fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone \`e quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocit\`a di lettura/scrittura e minimizzazione di banck conflict. 
-
-La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocit\`a di lettura e scrittura dipende dal tipo di memoria usata mentre il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo, vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
-
-Una seconda fase consiste nel riportare, operazione per operazione, il codice per il PNRG usato nel caso per CPU, in parallelo su GPU. Questo tipo di passaggio non è immediato in quanto la generazione di numeri pseudorandom è per definizione seriale. 
-
-La generazione del numero $n+1$ dipende dal numero $n$. Dato che l'evoluzione del nostro modello è di tipo \emph{Metropolis} e i numeri random sono quindi una necessit\`a principle, per non perdere paralelizzazione del codice è necessario elaborare una strategia di estrazione parallela e performante per le GPU.
-
-\subsection*{Implementazione del modello}
 \begin{figure}
 	\centering
-		\includegraphics[width=150mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv.pdf}
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Ising_Mag_Cv.pdf}
 		\caption{\emph{Magnetizzazione} e \emph{Calore Specifico} per diverse taglie di reticolo, in funzione di $\beta$ generati su GPU}
 		\label{figura:GPU}
 \end{figure}
-Il reticolo di Ising è stato posizionato sulla griglia della GPU utilizzando la \emph{memoria shared} per ottenere migliori performance. La \emph{memoria shared} è divisa in blocchi indipendenti tra loro, questo fa si che il reticolo iniziale, una volta caricato in \emph{memoria shared} necessita che vengano specificate le relative condizioni di raccorto blocco/blocco e quindi effettuare l'update degli spin usando una doppia scacchiera. 
 
-Il primo livello di scacchiera, a blocchi grandi relativi ai blocchi della \emph{memoria shared}; il secondo livello di scacchiera, a blocchi piccoli nel senso che l'update dei siti viene svolto a scacchiera anche tra i threads all'interno dello stesso blocco. Tutti i threads dello stesso blocco condividono la stessa area di memoria shared. In Fig.~\ref{figura:time} sono stati plottati il tempo per proporre un update in funzione al size del reticolo.
-
-Anche su GPU \`e stata verificata l'attendibilit\`a fisica del modello simulato. In Fig.~\ref{figura:GPU} sono rappresentati i grafici di \emph{Mangnetizzazione} e \emph{Calore Specifico} a confronto con la soluzione analitica di Onsager al limite termodinamico. 
-
-\subsection*{Confronto performance dei vari PNRG}
+\subsection{Confronto performance dei vari PNRG}
 Insieme al numero di step necessari a far termalizzare il sistema \`e necessario indagare anche le performance temporali di ogni singolo PNRG per verificare se l'effettivo guadagno in numero di step \`e un effettivo guadagno in termini di tempi di simulazione. Un generatore caratterizzato da una miglior statistica e randomicit\`a dei dati pu\`o far termalizzare prima il sistema ma va comunque valutato il costo temporale necessario a generarli.
 \begin{figure}
 	\centering
@@ -252,40 +225,16 @@ Insieme al numero di step necessari a far termalizzare il sistema \`e necessario
 		\label{time:per:random}
 \end{figure}
 
-Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a 31bit impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
-\subsection*{Ottimizzazione della dimensione del blocco}
-\begin{figure}
-	\centering
-		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
-		\caption{}
-		\label{time:block:size}
-\end{figure}
+Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a $31bit$ impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
 
+\subsection{Compatibilit\`a statistica dei risultati}
+In Tab.~\ref{tab:mag} sono riportati i valori di magnetizzazione per un reticolo $32\times32$, con relativo errore, in funzione di $\beta$. Come detto in precedenza si è riusciti a riportare completamente, operazione per operazione, l'algoritmo usato su CPU alle schede grafiche quindi ci si aspetta che dopo lo stesso numero di passi Monte Carlo, il dato sia proprio identicamente lo stesso. 
 
+Come si può notare in Tab.~\ref{tab:mag} i dati, seppur compatibili tra loro all'interno del proprio errore, non sono identicamente lo stesso dato. La spiegazione consiste nel modo in cui vengono estratti i numeri pseudocasuali. Nel caso dell CPU l'evoluzione di uno spin è caratterizzato da un certo numero PR della catena e così via in modo ordinato su tutta l'estensione del reticolo, per tutti gli step Monte Carlo usati. 
 
+Nel caso della GPU, la catena di numeri pseudo random viene suddivisa in sottocatene. Il numero pseudorandom che caratterizava l'evoluzione dello spin nominato precedentemente, sulla GPU può caratterizzare un altro spin. \`E  quindi corretto trovare valori differenti, ma compatibili entro il loro errore statistico. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-	
-	\section{Consistenza del modello Fisico}
-Nelle Figure [\ref{figura:CPU}] e [\ref{figura:GPU}] sono raffigurati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin, sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
-\newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
-Effettuando un fit dei valori intorno alla temperatura critica, mettendo come parametri liberi $\alpha$ e $\beta_c$ è quindi possibile ricavare il valore dell'esponente critico e della temperatura critica di transizione di fase. Nelle immagini \ref{figura:CPU} e \ref{figura:GPU} sono riportati i valori del fit trovati che sono compatibili con quelli noti.
-\section{Discussione sulla diversità dei risultati}
-In Tabella \ref{tab:mag} sono riportati i valori di magnetizzazione per un reticolo $32\times32$, con relativo errore, in funzione di $\beta$. Come detto in precedenza, si è riusciti a portare completamente, operazione per operazione, l'algoritmo usato su CPU alle schede grafiche, quindi ci si aspettava che dopo lo stesso numero di passi di termalizzazione e di step Monte Carlo, il dato sia proprio identicamente lo stesso. Come si può notare in tabella i dati, seppur compatibili tra loro all'interno del proprio errore, non sono identicamente lo stesso dato. La spiegazione consiste nel modo in cui vengono estratti i numeri pseudocasuali. Nel caso dell CPU, in modo seriale, l'evoluzione di uno spin  è contraddistinto da un certo numero PR della catena e così via in modo ordinato su tutta l'estensione del reticolo, per tutti gli step Monte Carlo usati. Nel caso della GPU, la catena di numeri pseudo random viene suddivisa in sottocatene. Il numero pseudorandom che caratterizava l'evoluzione dello spin nominato precedentemente, sulla GPU può caratterizzare un altro spin. \`E  quindi corretto ritrovarsi con valori differenti, ma molto vicini tra loro e compatibilissimi all'interno del loro errore statistico. In conclusione i dati ci stanno dicendo è che nonostante ci sia un rimescolamento dei numeri casuali, la statistica del sistema rimane sempre la stessa, quindi i due dati sono perfettamente compatibili.   
+In conclusione i dati ci indicano che nonostante ci sia un rimescolamento dei numeri casuali, la statistica del sistema rimane sempre la stessa quindi le due simulzioni su CPU e GPU restituiscono risultati compatibili tra loro. Entrambi i risultati hanno un andamento compatibile con quello atteso se confrontati col modello al limite termodinamico.   
 
 \begin{table}
 \begin{center}
@@ -325,11 +274,25 @@ $0,700000$ &       $0,990200$   &     $0,005175$  &  $0,990184$  &  $0,005217$\\
 }
 \end{table}
 
+\subsection{Ottimizzazione della dimensione del blocco}
+La dimensione del numero di threads appartenenti ad un blocco \`e un parametro che pu\`o essere scelto nel programma. In Fig.~\ref{time:block:size} viene presentato l'andamento del tempo di run in funzione della dimensione del blocco.
+
+Come \`e possibile notare, il minimo \`e facilmente identificabile a $BLOCKL=24$. Questo valore trova la sua spiegazione in come \`e costruita la scheda grafica. Per la GTX480, il numero di threads che possono essere contenuti in un blocco \`e al massimo $1024$\footnote{Dato ottenuto con cudaGetDeviceProprieties()}.
+
+La spiegazione di questo risultato \`e nelle modalit\`a di lancio del kernel. Per effettuare la doppia scacchiera viene passata una $dimBlock$  sotto forma di struttura $dim3$ in cui il numero di threads in Y \`e la met\`a di quelli in X. Chiamando $BLOCKL$ la dimensione del blocco in Y, risulta che in un blocco, per ogni lancio del kernel ci sono un numero di threads che \`e pari a $2*BLOCKL*BLOCKL$. Il valore di $BLOCKL$ che permette a questa espressione di saturare completamente il warp \`e appunto $24$ in quanto $24*24*2=1152$. Quindi, per ottenere le migliori performance \`e opportuno scegliere una dimensione del blocco in modo da permettere la saturazione del Warp.
+\begin{figure}
+	\centering
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
+		\caption{}
+		\label{time:block:size}
+\end{figure}
+
+
 \section{Comparazione delle prestazioni}
 Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale.
 \begin{figure}
 	\centering
-	\includegraphics[width=120mm,angle=0,clip=]{../CPU-GPU-time.pdf}
+	\includegraphics[width=150mm,angle=0,clip=]{../CPU-GPU-time.pdf}
 	\caption{CPU/GPU}
 	\label{figura:time}
 \end{figure}

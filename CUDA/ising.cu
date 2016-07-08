@@ -13,8 +13,8 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 1024
-#define BLOCKL 4
+#define L 256
+#define BLOCKL 48
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -315,28 +315,29 @@ int main(int argc, char**argv){
 	double chi_sqr_m=0;	
 	
 	for(int i=0; i < 1000; ++i){
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
 
 
 	double start = getTime();
 	for(int i=0; i < STEP_MC; ++i){
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		//do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
-		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
-		do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
+		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
+		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		
 
 
 		cudaThreadSynchronize();
-		
+	
+		/*	
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
 		cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
 		
@@ -357,6 +358,7 @@ int main(int argc, char**argv){
 
 		m=0;	
 		sumE=ie;
+		*/
 	}
 	double end = getTime();
 	//cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);
@@ -374,7 +376,7 @@ int main(int argc, char**argv){
 	M/=((double)STEP_MC);
 
 	printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	printf("%i\t%f\n", L, (end-start)/((double)(L*L)*(STEP_MC)));
+	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 

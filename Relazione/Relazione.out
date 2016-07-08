@@ -1,8 +1,10 @@
 \BOOKMARK [1][-]{section.1}{Scelta del modello}{}% 1
 \BOOKMARK [2][-]{subsection.1.1}{Algoritmo di Metropolis}{section.1}% 2
 \BOOKMARK [1][-]{section.2}{Implementazione del codice}{}% 3
-\BOOKMARK [2][-]{subsection.2.1}{Implementazione su CPU}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.2}{Implementazione su GPU}{section.2}% 5
-\BOOKMARK [1][-]{section.3}{Consistenza del modello Fisico}{}% 6
-\BOOKMARK [1][-]{section.4}{Discussione sulla diversit\340 dei risultati}{}% 7
-\BOOKMARK [1][-]{section.5}{Comparazione delle prestazioni}{}% 8
+\BOOKMARK [1][-]{section.3}{Implementazione su CPU}{}% 4
+\BOOKMARK [1][-]{section.4}{Implementazione su GPU}{}% 5
+\BOOKMARK [2][-]{subsection.4.1}{Consistenza del modello Fisico su GPU}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.2}{Confronto performance dei vari PNRG}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.3}{Compatibilit\340 statistica dei risultati}{section.4}% 8
+\BOOKMARK [2][-]{subsection.4.4}{Ottimizzazione della dimensione del blocco}{section.4}% 9
+\BOOKMARK [1][-]{section.5}{Comparazione delle prestazioni}{}% 10
