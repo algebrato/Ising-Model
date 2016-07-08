@@ -148,6 +148,25 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 	\label{figura:randomCPU}
 \end{figure}
 \subsection{Implementazione su GPU}
+L'implementazione del codice su GPU \`e stata organizzata in modo da poter mettere in luce tutte le varie caratteristiche che contraddistinguono le \emph{schede grafiche}. La prima caratteristica \`e l'elevato numero di ALU\footnote{Arithmetic and Logic Unit} messo a disposizione rispetto alle CPU, quindi una prima implementazione del codice \`e stata fatta portando il reticolo sulla \emph{memoria globale} della scheda e cercando di saturare il numero di ALU impegnate in modo parallelo, con una strategia di update a scacchiera.
+
+La seconda caratteristica di questo tipo di devices \`e la possibilit\`a di ottimizzare il proprio programma usando tutti i vari \emph{livelli di memoria} che vengono messi a disposizione. Oltre alla \emph{memoria globale} \`e possibile usare un livello di memoria superiore chiamato \emph{memoria shared}. Il vantaggio di questo tipo di memoria \`e che ha una velocit\`a di lettura/scrittura superiore a quella globale. Lo svantaggio \`e che le sue dimensioni sono pi\`u piccole ed \`e suddivisa per blocco. Per far comunicare due dati, istanziati su blocchi diversi di memoria shared \`e necessario quindi scrivere delle condizioni di raccordo.
+
+Il primo kernel naif che \`e possibile scrivere \`e quello che utilizza solo memoria globale e aggiorna gli spin seguendo solo una semplice scacchiera. Un kernel pi\`u elaborato che sia in grado di gestire anche il livello di \emph{memoria shared} segue una strategia di update dei siti esposta in Fig.~\ref{reticolo_shared} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \begin{figure}
 	\begin{center}
 		\begin{tikzpicture}[x=1.4cm,y=1.4cm]
@@ -195,7 +214,14 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 		\end{tikzpicture}
 	\end{center}
 	\caption{\`E possibil notare la strategia di update a doppia scacchiera. I blocchi vengono attivati a scacchiera. In ogni blocco, l'update degli spin \`e a sua volta fatto a scacchiera. In giallo sono identificati gli spin di \emph{cornice} che devono essere storati nella memoria shared, di ogni blocco, per garantire la condizione di raccordo \emph{blocco-blocco} }
+	\label{reticolo_shared}
 \end{figure}
+
+
+
+
+
+
 L'implementazione del codice su GPU passa attraverso due fasi. La prima consiste nell'organizzare il reticolo di Ising sulla GPU. L'obiettivo che ci si pone \`e quello di usare nel modo migliore le aree di memorie in modo da garantire sempre coalescenza, velocit\`a di lettura/scrittura e minimizzazione di banck conflict. 
 
 La coalescenza consiste nell'effettuare chiamate ad aree di memoria allineate in modo da massimizzare le performance. La velocit\`a di lettura e scrittura dipende dal tipo di memoria usata mentre il problema del banck conflict consiste nel fatto che due aree di memoria non possono essere lette contemporaneamente. Se nel programma ci sono chiamate di questo tipo, vengono schedulate in modo sequenziale perdendo tutto il vantaggio della parallelizzazione.
