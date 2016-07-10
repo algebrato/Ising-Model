@@ -14,7 +14,7 @@ using namespace std;
 #define J 1
 #define DIM 2
 #define L 256
-#define BLOCKL 48
+#define BLOCKL 16
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -285,11 +285,11 @@ int main(int argc, char**argv){
 
 	s = (spin_t*)malloc(N*sizeof(spin_t));
 	for(int i=0; i<N; i++){
-	//		if(rand()/((double)RAND_MAX) < 0.5){
-	//				s[i]=-1;
-	//		}else{
+			if(rand()/((double)RAND_MAX) < 0.5){
+					s[i]=-1;
+			}else{
 					s[i]=1;
-	//		}
+			}
 	}
 
 	cudaMalloc((void**)&sD, N*sizeof(spin_t));
@@ -314,7 +314,7 @@ int main(int argc, char**argv){
 	double chi_sqr_2=0;
 	double chi_sqr_m=0;	
 	
-	for(int i=0; i < 1000; ++i){
+	/*for(int i=0; i < 1000; ++i){
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		do_update_shared<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 		//do_update_testB<<<grid, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
@@ -322,7 +322,7 @@ int main(int argc, char**argv){
 		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 0, energie_d);
 		//do_update<<<gridRES, block>>>(sD, a_d, b_d, c_d, d_d, 1, energie_d);
 	}
-
+*/
 
 	double start = getTime();
 	for(int i=0; i < STEP_MC; ++i){
@@ -337,7 +337,7 @@ int main(int argc, char**argv){
 
 		cudaThreadSynchronize();
 	
-		/*	
+			
 		get_magnetization<<<gridRES, blockRES>>>(sD, vec_mag_d);
 		cudaMemcpy(vec_mag, vec_mag_d, (GRIDL*GRIDL)*sizeof(float), D_H);
 		
@@ -354,11 +354,11 @@ int main(int argc, char**argv){
 		E_2 += pow((double)sumE,2.);
 		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
 		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
-		//printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
+		printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
 
 		m=0;	
 		sumE=ie;
-		*/
+		
 	}
 	double end = getTime();
 	//cudaMemcpy(s, sD, N*sizeof(spin_t), D_H);
@@ -375,8 +375,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
+	//printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	//printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 
