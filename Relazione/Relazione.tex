@@ -40,7 +40,7 @@ Durante l'implementazione da CPU a GPU, \`e stato possibile riportare il codice,
 
 \`E stato possibile riportare da un ambiete all'altro anche il generatore di numeri pseudorandom, in modo da rendere consistente la valutazione dello speed-up. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata correlata anche al tipo di implementazione del \emph{Generatore di Numeri Pseudorandom (PNRG)}. 
 
-Il lavoro consister\`a in una prima presentazione del modello fisico usato a cui seguir\`a la presentazione dell'algoritmo usato per l'update dei siti reticolari. Una volta presentati modello e algoritmo di update viene descritta l'implementazione su GPU discutendo in primis la consistenza fisica della simulazione e successivamente i vari accorgimenti per ottimizzare le prestazioni.
+Il lavoro consiste in una prima presentazione del modello fisico usato a cui seguir\`a la presentazione dell'algoritmo usato per l'update dei siti reticolari. Una volta presentati modello e algoritmo di update viene descritta l'implementazione su GPU discutendo in primis la consistenza fisica della simulazione e successivamente i vari accorgimenti per ottimizzare le prestazioni.
 
 
 \section{Scelta del modello}
@@ -66,7 +66,7 @@ Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi l
 Per modelli finiti sufficientemente grandi è possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ che abbiano valore non nullo. Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising con molti spin a valore $+1$ sarà favorito. 
 
 \subsection{Algoritmo di Metropolis}
-L'algoritmo usato per far evolvere il sistema \`e quello di \emph{Metropolis}, con aggiornamento del sito per \emph{singolo spin flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
+L'algoritmo usato per far evolvere il sistema \`e quello di \emph{Metropolis}, con aggiornamenti del reticolo per \emph{singolo spin flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
 
 Si denisce quindi l'algoritmo di Metropolis per un reticolo di Ising, caratterizzato da aggiornamento a singolo spin flip, tramite la definizione di una probabilit\`a di selezionare lo spin da aggiornate, chiamata \emph{probabilit\`a di selezione} $g(\mu \to \nu)$ e una probabilit\`a di accettare l'update proposto, chiamata \emph{probabilit\`a di accettazione} $A(\mu \to \nu)$. Essendo la dinamica a \emph{singolo spin flip} si ha che la probabilit\`a che uno spin ha di essere selezionato \`e la stessa per tutti gli spin. Dato $N$ il numero totale di spin nel reticolo, si ha che
 \newl{g(\mu\to\nu)=\frac{1}{N}\,.}
@@ -101,7 +101,7 @@ A(\mu\to\nu)=\left\{
 \begin{figure}
 	\centering
 	\includegraphics[width=120mm,angle=0,clip=]{acc_rat.pdf}
-	\caption{Rateo di Accettazione Metropolis in funzione a $\Delta E$}
+	\caption{Rateo di Accettazione Metropolis in funzione a $\beta \Delta E$}
 	\label{acc_rat_met}
 \end{figure}
 
@@ -132,7 +132,7 @@ In Fig.~\ref{figura:CPU} sono presentati i risultati di \emph{Magnetizzazione} e
 
 Si notano in modo evidente gli effetti di \emph{size-scaling} per reticoli molto piccoli. Al crescere della taglia del reticolo i risultati della simulazione si avvicinano sempre di pi\`u al modello al limite termodinamico.
 
-I risultati riportati in Fig.~\ref{figura:CPU} mostrano anche che l'implementazione dell'algoritmo di update scritto precedente restituisce, su CPU, i valori attesi. Verificata la compatibilit\`a tra i valori numerici simulati e quelli teorici della soluzione di Onsager, \`e ora possibile passare all'implementazione su GPU con l'obiettivo di ottenere gli stessi risultati numerici valutando il relativo \emph{speed-up}.
+I risultati riportati in Fig.~\ref{figura:CPU} mostrano anche che l'implementazione dell'algoritmo di update presentato nel capitolo precedente restituisce, su CPU, i valori attesi. Verificata la compatibilit\`a tra i valori numerici simulati e quelli teorici della soluzione di Onsager, \`e ora possibile passare all'implementazione su GPU con l'obiettivo di ottenere gli stessi risultati numerici valutando il relativo \emph{speed-up}.
 \begin{figure}
 	\centering
 		\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Ising_Mag_Cv.pdf}
@@ -140,7 +140,7 @@ I risultati riportati in Fig.~\ref{figura:CPU} mostrano anche che l'implementazi
 		\label{figura:CPU}
 \end{figure}
 
-In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del genratore pi\`u performante e quello meno performante c'\`e circa un fattore tre. 
+In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNRG. Come si nota, diversi generatori fanno termalizzare il sistema in un numero molto diverso di step. Tra i passi di termalizzazione del generatore pi\`u performante e quello meno performante c'\`e circa un fattore tre. 
 \begin{figure}
 \centering
 	\includegraphics[width=120mm,angle=0,clip=]{../CPU/Result/Term_step.pdf}
@@ -148,9 +148,9 @@ In Fig.~\ref{figura:randomCPU} viene presentato il confronto tra tre diversi PNR
 	\label{figura:randomCPU}
 \end{figure}
 \section{Implementazione su GPU}
-L'implementazione del codice su GPU \`e stata organizzata in modo da poter mettere in luce tutte le varie caratteristiche che contraddistinguono le \emph{schede grafiche}. La prima caratteristica \`e l'elevato numero di ALU\footnote{Arithmetic and Logic Unit} messo a disposizione rispetto alle CPU, quindi una prima implementazione del codice \`e stata fatta portando il reticolo sulla \emph{memoria globale} della scheda e cercando di saturare il numero di ALU impegnate in modo parallelo, con una strategia di update a scacchiera.
+L'implementazione del codice su GPU \`e stata organizzata in modo da poter mettere in luce tutte le varie caratteristiche che contraddistinguono le \emph{schede grafiche}. La prima caratteristica \`e l'elevato numero di ALU\footnote{Arithmetic and Logic Unit} messo a disposizione rispetto alle CPU quindi una prima implementazione del codice \`e stata fatta portando il reticolo sulla \emph{memoria globale} della scheda e cercando di saturare il numero di ALU impegnate in modo parallelo attraverso una strategia di update a scacchiera.
 
-La seconda caratteristica di questo tipo di devices \`e la possibilit\`a di ottimizzare il proprio programma usando tutti i vari \emph{livelli di memoria} che vengono messi a disposizione. Oltre alla \emph{memoria globale} \`e possibile usare un livello di memoria superiore chiamato \emph{memoria shared}. Il vantaggio di questo tipo di memoria \`e che ha una velocit\`a di lettura/scrittura superiore a quella globale. Lo svantaggio \`e che le sue dimensioni sono pi\`u piccole ed \`e suddivisa per blocco. Per far comunicare due dati, istanziati su blocchi diversi di memoria shared \`e necessario quindi scrivere delle condizioni di raccordo.
+La seconda caratteristica di questo tipo di devices \`e la possibilit\`a di ottimizzare il proprio programma usando tutti i vari \emph{livelli di memoria} che vengono messi a disposizione. Oltre alla \emph{memoria globale} \`e possibile usare un livello di memoria superiore chiamato \emph{memoria shared}. Il vantaggio di questo tipo di memoria consiste in una velocit\`a di lettura/scrittura superiore a quella globale. Lo svantaggio \`e che le sue dimensioni sono pi\`u piccole ed \`e suddivisa per blocco. Per far comunicare due dati, istanziati su blocchi diversi di memoria shared \`e necessario quindi scrivere delle condizioni di raccordo.
 
 Un primo kernel naif che \`e possibile scrivere \`e quello che utilizza solo memoria globale e aggiorna gli spin seguendo solo una singola scacchiera. Un kernel pi\`u elaborato che sia in grado di gestire anche il livello di \emph{memoria shared} segue una strategia di update dei siti esposta in Fig.~\ref{reticolo_shared}.
 
@@ -203,7 +203,7 @@ Il kernel viene lanciato due volte con un parametro di offset. Al primo run veng
 
 
 \subsection{Consistenza del modello Fisico su GPU}
-In Fig.~\ref{figura:CPU} e Fig.~\ref{figura:GPU} vengono rappresentati tre grafici. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. 
+In Fig.~\ref{figura:CPU} e Fig.~\ref{figura:GPU} vengono rappresentati tre grafici per ogni immagine. Il primo rappresenta la magnetizzazione (per spin) in funzione di $\beta$, il secondo il calore specifico per spin sempre in funzione di $\beta$ e nel terzo viene fatto un fit dei valori di magnetizzazione, per ricavare l'esponente critico $\alpha$. 
 
 Nell'intorno del $\beta_c$ la magnetizzazione si comporta come
 \newl{M(\beta)\sim \left\lvert 1-\frac{\beta_c}{\beta}\right\rvert ^{\alpha}.}
@@ -217,15 +217,24 @@ Effettuando un fit dei valori intorno alla temperatura critica, lasciando come p
 \end{figure}
 
 \subsection{Confronto performance dei vari PNRG}
-Insieme al numero di step necessari a far termalizzare il sistema \`e necessario indagare anche le performance temporali di ogni singolo PNRG per verificare se l'effettivo guadagno in numero di step \`e un effettivo guadagno in termini di tempi di simulazione. Un generatore caratterizzato da una miglior statistica e randomicit\`a dei dati pu\`o far termalizzare prima il sistema ma va comunque valutato il costo temporale necessario a generarli.
+Insieme al numero di step necessari a far termalizzare il sistema \`e necessario indagare anche le performance temporali di ogni singolo PNRG per verificare se l'effettivo guadagno in numero di step \`e un effettivo guadagno in termini di tempi di simulazione. 
+
+Un generatore caratterizzato da una miglior statistica e randomicit\`a dei dati pu\`o far termalizzare prima il sistema ma va comunque valutato il costo temporale necessario a generarli.
+\begin{figure}
+	\centering
+		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Term/Term_step_GPU_04.pdf}
+		\caption{Termalizzazione per due differenti PNRG. In rosso LCG a 32 bit, in verde XorShift a 128 bit per un reticolo \emph{128$\times$128} spins}
+		\label{termalizz:GPU}
+\end{figure}
 \begin{figure}
 	\centering
 		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_PNRG.pdf}
 		\caption{Confronto del tempo di generazione di un numero pseudorandom per due differenti PNRG}
 		\label{time:per:random}
 \end{figure}
+Mettendo insieme i risultati esposti in Fig.~\ref{termalizz:GPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, il numero di step necessari alla termalizzaione \`e legato in qualche modo a $\beta$. Per valori di $\beta$ piccoli (inferiori a $\beta_c$) i due PNRG fanno termalizzare il sistema nello stesso modo. Diminuendo la temperatura a $\beta=0.6$, ci si va a posizionare nella zona a decadimento esponenziale del rateo di accettazione che \`e stato presentato in Fig.~\ref{acc_rat_met}. Dato che una mossa viene accettata solo se il numero random estratto si va a posizionare sotto alla curca del rateo di accettazione, nella parte piccola diventa pi\`u eviente la qualit\`a dei numeri pseudorandom che vengono generati.
 
-Mettendo insieme i risultati esposti in Fig.~\ref{figura:randomCPU} ed in Fig.~\ref{time:per:random} si pu\`o notare che, l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a $31bit$ impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo.
+A bassa temperatura l'algorimo \emph{XorShift 128-bit} impiega circa $1600$ step a termalizzare. Con la funzione \emph{rand 31-bit} impega quasi $4000$ step, quindi un generatore a $31bit$ impega circa $2.5$ volte in pi\`u a termalizzare rispetto ad uno a $128$ bit. Per quanto riguardo i tempi, un generatore a $128-bit$, rispetto ad uno a $32-bit$ \`e solamente $2$ volte pi\`u lento. Questo fa s\`i che la soluzione pi\`u performante, per $\beta>\beta_c$, sia quella che prevede di utilizzare un generatore di numeri pseudorandom pi\`u lento ma che permetta al sistema di termalizzare in un numero inferiori di step Monte Carlo. Per $\beta < \beta_c$ risulta pi\`u performanete l'algoritmo a $32-bit$.
 
 \subsection{Compatibilit\`a statistica dei risultati}
 In Tab.~\ref{tab:mag} sono riportati i valori di magnetizzazione per un reticolo $32\times32$, con relativo errore, in funzione di $\beta$. Come detto in precedenza si è riusciti a riportare completamente, operazione per operazione, l'algoritmo usato su CPU alle schede grafiche quindi ci si aspetta che dopo lo stesso numero di passi Monte Carlo, il dato sia proprio identicamente lo stesso. 
@@ -283,25 +292,24 @@ La spiegazione di questo risultato \`e nelle modalit\`a di lancio del kernel. Pe
 \begin{figure}
 	\centering
 		\includegraphics[width=120mm,angle=0,clip=]{../CUDA/Result/Res3/Time_BLOCK.pdf}
-		\caption{}
+		\caption{Tempo di esecuzione in funzione alla dimensione del Blocco}
 		\label{time:block:size}
 \end{figure}
 
 
 \section{Comparazione delle prestazioni}
-Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando l'apporto anche della memoria shared.I risultati sono riportati in Figura \ref{figura:time}. Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei 2 ordini di grandezza rispetto allo stesso codice girato du CPU. L'utilizzo della memoria shared non ha velocizzato il processo. Le migliori prestazioni sono state ottenute aggiornando il reticolo a scacchiera sulla memoria globale.
+Il codice è stato implementato in CPP per singola CPU, ed in cuda C con due varianti, la prima con il reticolo tutto su global memory la seconda utilizzando anche la memoria shared. I risultati sono riportati in Figura \ref{figura:time}. 
+
+Come è possibile notare, una volta saturato il sensore, lo speed-up raggiunto è nell'ordine dei $2$ ordini di grandezza rispetto allo stesso codice girato du CPU. 
+
+L'utilizzo della memoria shared porta vantaggi solo per reticolo molto grandi. Questo era attendibile in quanto, essendo il modello di Ising molto semplice da implementare, il fatto di avere tutto il reticolo su memoria globale d\`a particolari problemi dal punto di vista della coalescenza della memoria. Per reticoli piccoli, infatti, il guadagno che si ha in lettura/scrittura lo si perde tutto nella complessit\`a di posizionare il reticolo nei blocchi di memoria shared e nell'imporre le condizioni di raccordo tra i blocchi.
+Per reticoli molto grossi il guadagno in termini di lettura/scrittura diventa pi\`u incisivo. Essendo moltissimi spin, diventano molto incisive le operazioni di lettura e scrittura. Quello che prima veniva perso nella complessit\`a delle condizioni di raccordo ora \`e poco incisivo rispetto al numero di letture/scritture.
 \begin{figure}
 	\centering
 	\includegraphics[width=150mm,angle=0,clip=]{../CPU-GPU-time.pdf}
-	\caption{CPU/GPU}
+	\caption{Confronti tempi di esecuzione per CPU, GPU global memory e GPU shared memory}
 	\label{figura:time}
 \end{figure}
-
-
-
-
-
-
 
 
 \end{document}

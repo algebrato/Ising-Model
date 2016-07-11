@@ -1,6 +1,6 @@
 #!/usr/bin/gnuplot
 
-set terminal pdf fontscale 1.2 size 12,7 enhanced
+set terminal pdf fontscale 1.2 size 12,7 enhanced linewidth 3
 set output "CPU-GPU-time.pdf"
 set origin 0,0
 set size 1,1
