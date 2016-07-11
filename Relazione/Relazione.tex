@@ -36,7 +36,7 @@ Matricola: 861838}
 \section*{Introduzione}
 In questo lavoro vengono messe a confronto le prestazioni di CPU\footnote{Central Processing unit} e GPU\footnote{Graphics Processing Unit}, usando come banco di prova un modello fisico ben conosciuto di cui sono note, in modo analitico, le espressioni delle varie grandezze fisiche che si vogliono simulare. Il modello in questione \`e il \emph{reticolo di Ising bidimensionale}. 
 
-Durante l'implementazione da CPU a GPU, \`e stato possibile riportare il codice, da un ambienete all'altro, mantenendo lo stesso algoritmo e quindi lo stesso numero di operazioni che vengono fatte durante l'aggiornamento dei siti reticolari.
+Durante l'implementazione da CPU a GPU \`e stato possibile riportare il codice, da un ambienete all'altro, mantenendo lo stesso algoritmo e quindi lo stesso numero di operazioni che vengono fatte durante l'aggiornamento dei siti reticolari.
 
 \`E stato possibile riportare da un ambiete all'altro anche il generatore di numeri pseudorandom, in modo da rendere consistente la valutazione dello speed-up. Se si fosse usato un generatore di numeri pseudorandom diverso, la comparazione sarebbe stata correlata anche al tipo di implementazione del \emph{Generatore di Numeri Pseudorandom (PNRG)}. 
 
@@ -56,7 +56,7 @@ In questo lavoro si considera il caso il caso $D = 2$ dimensionale, $J > 0$ e a 
 
 Le principali grandezze fisiche che possono essere calcolate sono la \emph{magnetizzazione media} del sistema $\langle M\rangle$  e la \emph{capacità termica} a volume costante $\langle C_V \rangle$ che viene calcolata col teorema di fluttuazione-dissipazione. Tutte queste quantit\`a estensive divergono al limite termodinamico. 
 
-Nelle simulazioni statistiche vengono considerati dei modelli finiti di $N = L \times L$ spins che si desidera confrontare per diversi size. \`E utile pertanto confrontare la \emph{densità di calore specifico} $c_V = CV /N$ e di \emph{magnetizzazione} che è la variabile coniugata al campo esterno $h$
+Nelle simulazioni che sono state condotte in questo lavoro vengono considerati dei modelli di taglia ovviamente finita con un numero di spin pari a $N = L \times L$ . Le simulazioni sono state condotte per diverse taglie del reticolo in modo da evidenziare eventuali effetti di \emph{size-scaling}. Per questa ragione \`e utile pertanto confrontare le \emph{densità di calore specifico} $c_V = CV /N$ e di \emph{magnetizzazione} che è la variabile coniugata al campo esterno $h$
 \newl{m=\frac{1}{N}\left\langle\sum_is_i\right\rangle.}
 
 Per il caso $h = 0$ e $T > T_c$ , $\langle M \rangle$ si annulla. Questo comportamento può essere spiegato a causa del fatto che per $T > T_c$ le fluttuazioni termiche prevalgono sulla tendenza del termine di interazione $J$ ad allineare gli spin in un'unica direzione. La lunghezza di correlazione diventa molto piccola e ogni spin ha la stessa probabilità di avere come valore $+1$ o $-1$. In questo modo $\langle M \rangle$ risulta nulla. 
@@ -66,9 +66,9 @@ Per temperature $T < T_c$ gli spin risentono fortemente dell’interazione coi l
 Per modelli finiti sufficientemente grandi è possibile effettuare delle valutazioni e misure di magnetizzazione media spontanea del sistema per $T < T_c$ che abbiano valore non nullo. Questo si ottiene settando lo stato di partenza in modo tale che uno dei due stati sia più popolato dell’altro. Se per convenzione si sceglie uno stato di partenza con una maggioranza di spins a valore $+1$, lo stato di equilibrio dell’Hamiltoniana di Ising con molti spin a valore $+1$ sarà favorito. 
 
 \subsection{Algoritmo di Metropolis}
-L'algoritmo usato per far evolvere il sistema \`e quello di \emph{Metropolis}, con aggiornamenti del reticolo per \emph{singolo spin flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
+L'algoritmo usato per far evolvere il sistema \`e quello di \emph{Metropolis} con aggiornamenti del reticolo per \emph{singolo spin flip}. I vari stati vengono generati in modo che il successivo sia differente dal precedente per il flip di un singolo spin del reticolo preso in modo casuale, quindi lo stato $\mu$ e quello $\nu$ differiscono tra loro solo per il flip di un singolo spin. 
 
-Si denisce quindi l'algoritmo di Metropolis per un reticolo di Ising, caratterizzato da aggiornamento a singolo spin flip, tramite la definizione di una probabilit\`a di selezionare lo spin da aggiornate, chiamata \emph{probabilit\`a di selezione} $g(\mu \to \nu)$ e una probabilit\`a di accettare l'update proposto, chiamata \emph{probabilit\`a di accettazione} $A(\mu \to \nu)$. Essendo la dinamica a \emph{singolo spin flip} si ha che la probabilit\`a che uno spin ha di essere selezionato \`e la stessa per tutti gli spin. Dato $N$ il numero totale di spin nel reticolo, si ha che
+L'algoritmo di Metropolis a singolo spin-flip per un reticolo di Ising viene definito attraverlo l'introduzione di una \emph{probabilit\`a di selezionare} lo spin da aggiornate, chiamata \emph{probabilit\`a di selezione} $g(\mu \to \nu)$ e una probabilit\`a di accettare l'update propost chiamata \emph{probabilit\`a di accettazione} $A(\mu \to \nu)$. Essendo la dinamica a \emph{singolo spin flip} si ha che la probabilit\`a che uno spin ha di essere selezionato \`e la stessa per tutti gli spin. Dato $N$ il numero totale di spin nel reticolo, si ha che
 \newl{g(\mu\to\nu)=\frac{1}{N}\,.}
 
 Con la probabilità di selezione definita in questo modo la condizione del \emph{bilancio dettagliato} prende la forma
@@ -78,7 +78,7 @@ e dato che $g(\mu\to\nu)=g(\nu\to\mu)$ si sceglie il \emph{rateo di accettazione
 da cui è possibile dedurre che
 \newl{A(\mu\to\nu) = A_0 e^{-\frac{1}{2}\beta(E_\nu-E_\mu)}\label{acc-rat-azer}\,.}
 
-Per avere un algoritmo che sia il più efficiente possibile il \emph{rateo di accettazione} deve essere significativamente diverso da zero. Il parametro $A_0$ è scelto in funzione ad alcune considerazioni relative alla struttura dell'Hamiltoniana di Ising. \`E facile osservare che la differenza di energia tra due stati, in modulo, \`e al massimo pari a $|\Delta E|=2zJ$ dove $z$ è il numero di primi vicini. Nel caso di reticolo $2D$ vale $z=4$, quindi per il reticolo 2D abbiamo che al massimo $|\Delta E|= 8J$. La differenza di energia tra lo stato $\mu$ e $\nu$ è
+Per avere un algoritmo che sia il più efficace possibile il \emph{rateo di accettazione} deve essere significativamente diverso da zero. Il parametro $A_0$ \`e scelto in funzione ad alcune considerazioni relative alla struttura dell'Hamiltoniana di Ising. \`E facile osservare che la differenza di energia tra due stati, in modulo, \`e al massimo pari a $|\Delta E|=2zJ$ dove $z$ \`e il numero di primi vicini. Nel caso di reticolo $2D$ vale $z=4$, quindi per il reticolo 2D abbiamo che al massimo $|\Delta E|= 8J$. La differenza di energia tra lo stato $\mu$ e $\nu$ è
 \newl{|E_\nu-E_\mu| \leq 2zJ.}
 In questo modo, il massimo valore possibile dell'esponenziale \`e
 \newl{e^{-\frac{1}{2}\beta (E_\nu-E_\mu)} \leq e^{\beta zJ}}
@@ -107,7 +107,7 @@ A(\mu\to\nu)=\left\{
 
 Per il modello di Ising i \emph{ratei di accettazione} appena descritti hanno la particolarit\`a che possono essere calcolati mediante la sola conoscenza degli spins primi vicini allo spin di cui si propone il suo flip, questo perchè l'interazione nel modello di Ising  è a corto raggio. 
 
-Nel caso dell'Hamiltoniana di Ising, questa differenza è possibile scriverla in modo molto semplice, in funzione solo dagli spin primi vicini dello spin di cui si propone il flip
+Nel caso dell'Hamiltoniana di Ising questa differenza è possibile scriverla in modo molto semplice in funzione solo dagli spin primi vicini dello spin di cui si propone il flip
 \newl{
 	E_\nu - E_\mu &=& -J\sum_{\langle i,j \rangle}s_i^\nu s_j^\nu + J\sum_{\langle i,j \rangle}s_i^\mu s_j^\mu = \nonumber\\
 	&=& -J\sum_{i\neq k}s_i^\nu(s_k^\nu-s_k^\mu) = -2Js_k^\mu\sum_{i\neq k} s_i^\mu\,.
