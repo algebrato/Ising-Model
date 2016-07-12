@@ -27,7 +27,7 @@ set multiplot
 	set size 0.5,0.5
 	set ylabel "Magnetizzazione per spin"
 	set xlabel "Numero di Step"
-	set yrange [0:1.05]
+	set yrange [0:1.1]
 	set title "Confronto termalizzazione {/Symbol b = 0.6}"
 	plot "Term_06_LCG.dat" u 2 title "LCG - {/Symbol b = 0.6}" w l, "Term_06_XOR.dat" u 2 pt 7 ps 0.6 title "XorShift {/Symbol b = 0.6}" w l
 

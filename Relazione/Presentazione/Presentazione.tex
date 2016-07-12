@@ -27,7 +27,7 @@
 
 	\begin{frame}
 		\frametitle{Il Modello di Ising}
-		Il modello di Ising \`e caratterizzato dalla seguente Hamiltoniana
+		L'Hamiltoniana di Ising che identifica il modello studiato \`e
 		\begin{eqnarray}
 			H = -J \sum_{\left\langle i,j \right\rangle} s_i s_j -h\sum_i s_i
 		\end{eqnarray}
@@ -64,8 +64,37 @@
 	\end{frame}
 
 	\begin{frame}
-		\frametitle{}
+		\frametitle{Ottimizzazione dimensione blocco}
+		Anche l'ottimizzazione di BLOCKL \`e fondamentale
+		\begin{figure}
+				\includegraphics[scale=0.35]{../../CUDA/Result/Res3/Time_BLOCK.pdf}
+				\caption{Il valore di BLOCKL che ottimizza al meglio le performance \`e 24}
+		\end{figure}
 	\end{frame}
 
+	\begin{frame}
+		\frametitle{Ottimizzazione PNRG}
+		\begin{figure}
+				\includegraphics[scale=0.32]{../../CUDA/Term/Term_step_GPU_04_pre.pdf}
+				\caption{Grafici calcolati per un reticolo $128\times 128$}
+		\end{figure}
+	\end{frame}
+
+
+	\begin{frame}
+			\frametitle{Ottimizzazione PNRG}
+			\begin{figure}
+					\includegraphics[scale=0.32]{../../CUDA/Result/Res3/Time_PNRG.pdf}
+					\caption{Tempo di generazione di un numero pseudorandom in funzione alla taglia del reticolo}
+			\end{figure}
+	\end{frame}
+
+	\begin{frame}
+			\frametitle{Confronto sui tempi di simulazione}
+			\begin{figure}
+					\includegraphics[scale=0.32]{../../CPU-GPU-time.pdf}
+					\caption{Tempo di proposta di update di uno spin, scalato per la taglia del reticolo}
+			\end{figure}
+	\end{frame}
 
 \end{document}
