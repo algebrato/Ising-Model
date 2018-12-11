@@ -6,7 +6,7 @@ NAME		= Ising Model - Stefano Mandelli
 ## Switch #######################################
 DEVICE		:=true
 DEBUGMODE	:= true
-INTEL		:= true
+#INTEL		:= true
 #################################################
 
 

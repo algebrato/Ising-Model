@@ -13,8 +13,8 @@ using namespace std;
 
 #define J 1
 #define DIM 2
-#define L 128
-#define BLOCKL 16
+#define L 1024
+#define BLOCKL 32
 #define GRIDL  (L/BLOCKL)
 #define BLOCKS ((GRIDL*GRIDL)/2)
 #define THREADS ((BLOCKL*BLOCKL)/2)
@@ -202,9 +202,9 @@ __global__ void do_update_testB(spin_t *s, UI *a, UI *b, UI *c, UI *d,  UI offse
 	MTGPU(aa, bb, cc, dd);
 
 	a[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *aa;
-    b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
-    c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
-    d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
+    	b[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *bb;
+    	c[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *cc;
+    	d[(blockIdx.y*GRIDL+blockIdx.x)*THREADS+n] = *dd;
 }
 
 
@@ -270,7 +270,7 @@ int main(int argc, char**argv){
 	d=(unsigned int*)malloc(TOT_TH*2*sizeof(unsigned int));
 	
 
-	fill_ran_vec2(a, b, c, d, TOT_TH);
+	fill_ran_vec4(a, b, c, d, TOT_TH);
 	
 	cudaMalloc((void**)&a_d, 2*TOT_TH*(sizeof(unsigned int)));
 	cudaMalloc((void**)&b_d, 2*TOT_TH*(sizeof(unsigned int)));
@@ -354,7 +354,7 @@ int main(int argc, char**argv){
 		E_2 += pow((double)sumE,2.);
 		chi_sqr_2+=pow(E_2/(i+1)-pow((double)sumE,2.),2.);
 		chi_sqr_m+=pow(M/(i+1)-fabs(m),2.);			
-		printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
+		//printf("%i\t%f\t%f\n",(i+1),M/((double)(i+1)),E/((double)(i+1)));
 
 		m=0;	
 		sumE=ie;
@@ -375,8 +375,8 @@ int main(int argc, char**argv){
 
 	M/=((double)STEP_MC);
 
-	//printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
-	//printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
+	printf("#%f\t%f\t%f\t%f\t%f\n", BETA, M, Cal_Spec, err_per*Cal_Spec, sigma_m);
+	printf("%i\t%i\t%f\n",BLOCKL, L, (end-start)/((double)(L*L)*(STEP_MC)));
 	
 	return 0;
 

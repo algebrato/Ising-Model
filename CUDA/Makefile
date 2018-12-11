@@ -28,12 +28,12 @@ endif
 
 ifdef DEBUGMODE
 FLAGS 		:= -O2 -g 
-ARCH 		:= -arch=sm_20
+#ARCH 		:= -arch=sm_20
 LIBS		:=  
 INC		:= 
 else
 FLAGS		:= -O2
-ARCH		:= -arch=sm_20
+#ARCH		:= -arch=sm_20
 LIBS		:= 
 INC		:= 
 endif
